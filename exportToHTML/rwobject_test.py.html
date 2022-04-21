@@ -1,0 +1,163 @@
+<html>
+<head>
+<title>rwobject_test.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cc7832;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #6a8759;}
+.s3 { color: #a5c261;}
+.s4 { color: #629755; font-style: italic;}
+.s5 { color: #808080;}
+.s6 { color: #6897bb;}
+.ln { color: #606366; font-weight: normal; font-style: normal; }
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+rwobject_test.py</font>
+</center></td></tr></table>
+<pre><a name="l1"><span class="ln">1    </span></a><span class="s0">import </span><span class="s1">pathlib</span>
+<a name="l2"><span class="ln">2    </span></a><span class="s0">import </span><span class="s1">unittest</span>
+<a name="l3"><span class="ln">3    </span></a>
+<a name="l4"><span class="ln">4    </span></a><span class="s0">from </span><span class="s1">pygame </span><span class="s0">import </span><span class="s1">encode_string</span><span class="s0">, </span><span class="s1">encode_file_path</span>
+<a name="l5"><span class="ln">5    </span></a>
+<a name="l6"><span class="ln">6    </span></a>
+<a name="l7"><span class="ln">7    </span></a><span class="s0">class </span><span class="s1">RWopsEncodeStringTest(unittest.TestCase):</span>
+<a name="l8"><span class="ln">8    </span></a>    <span class="s0">global </span><span class="s1">getrefcount</span>
+<a name="l9"><span class="ln">9    </span></a>
+<a name="l10"><span class="ln">10   </span></a>    <span class="s0">def </span><span class="s1">test_obj_None(self):</span>
+<a name="l11"><span class="ln">11   </span></a>        <span class="s1">encoded_string = encode_string(</span><span class="s0">None</span><span class="s1">)</span>
+<a name="l12"><span class="ln">12   </span></a>
+<a name="l13"><span class="ln">13   </span></a>        <span class="s1">self.assertIsNone(encoded_string)</span>
+<a name="l14"><span class="ln">14   </span></a>
+<a name="l15"><span class="ln">15   </span></a>    <span class="s0">def </span><span class="s1">test_returns_bytes(self):</span>
+<a name="l16"><span class="ln">16   </span></a>        <span class="s1">u = </span><span class="s2">&quot;Hello&quot;</span>
+<a name="l17"><span class="ln">17   </span></a>        <span class="s1">encoded_string = encode_string(u)</span>
+<a name="l18"><span class="ln">18   </span></a>
+<a name="l19"><span class="ln">19   </span></a>        <span class="s1">self.assertIsInstance(encoded_string</span><span class="s0">, </span><span class="s1">bytes)</span>
+<a name="l20"><span class="ln">20   </span></a>
+<a name="l21"><span class="ln">21   </span></a>    <span class="s0">def </span><span class="s1">test_obj_bytes(self):</span>
+<a name="l22"><span class="ln">22   </span></a>        <span class="s1">b = </span><span class="s3">b&quot;encyclop</span><span class="s0">\xE6</span><span class="s3">dia&quot;</span>
+<a name="l23"><span class="ln">23   </span></a>        <span class="s1">encoded_string = encode_string(b</span><span class="s0">, </span><span class="s2">&quot;ascii&quot;</span><span class="s0">, </span><span class="s2">&quot;strict&quot;</span><span class="s1">)</span>
+<a name="l24"><span class="ln">24   </span></a>
+<a name="l25"><span class="ln">25   </span></a>        <span class="s1">self.assertIs(encoded_string</span><span class="s0">, </span><span class="s1">b)</span>
+<a name="l26"><span class="ln">26   </span></a>
+<a name="l27"><span class="ln">27   </span></a>    <span class="s0">def </span><span class="s1">test_encode_unicode(self):</span>
+<a name="l28"><span class="ln">28   </span></a>        <span class="s1">u = </span><span class="s2">&quot;</span><span class="s0">\u00DE</span><span class="s2">e Olde Komp</span><span class="s0">\u00FC</span><span class="s2">ter Shoppe&quot;</span>
+<a name="l29"><span class="ln">29   </span></a>        <span class="s1">b = u.encode(</span><span class="s2">&quot;utf-8&quot;</span><span class="s1">)</span>
+<a name="l30"><span class="ln">30   </span></a>        <span class="s1">self.assertEqual(encode_string(u</span><span class="s0">, </span><span class="s2">&quot;utf-8&quot;</span><span class="s1">)</span><span class="s0">, </span><span class="s1">b)</span>
+<a name="l31"><span class="ln">31   </span></a>
+<a name="l32"><span class="ln">32   </span></a>    <span class="s0">def </span><span class="s1">test_error_fowarding(self):</span>
+<a name="l33"><span class="ln">33   </span></a>        <span class="s1">self.assertRaises(SyntaxError</span><span class="s0">, </span><span class="s1">encode_string)</span>
+<a name="l34"><span class="ln">34   </span></a>
+<a name="l35"><span class="ln">35   </span></a>    <span class="s0">def </span><span class="s1">test_errors(self):</span>
+<a name="l36"><span class="ln">36   </span></a>        <span class="s1">u = </span><span class="s2">&quot;abc</span><span class="s0">\u0109</span><span class="s2">defg</span><span class="s0">\u011D</span><span class="s2">h</span><span class="s0">\u0125</span><span class="s2">ij</span><span class="s0">\u0135</span><span class="s2">klmnoprs</span><span class="s0">\u015D</span><span class="s2">tu</span><span class="s0">\u016D</span><span class="s2">vz&quot;</span>
+<a name="l37"><span class="ln">37   </span></a>        <span class="s1">b = u.encode(</span><span class="s2">&quot;ascii&quot;</span><span class="s0">, </span><span class="s2">&quot;ignore&quot;</span><span class="s1">)</span>
+<a name="l38"><span class="ln">38   </span></a>        <span class="s1">self.assertEqual(encode_string(u</span><span class="s0">, </span><span class="s2">&quot;ascii&quot;</span><span class="s0">, </span><span class="s2">&quot;ignore&quot;</span><span class="s1">)</span><span class="s0">, </span><span class="s1">b)</span>
+<a name="l39"><span class="ln">39   </span></a>
+<a name="l40"><span class="ln">40   </span></a>    <span class="s0">def </span><span class="s1">test_encoding_error(self):</span>
+<a name="l41"><span class="ln">41   </span></a>        <span class="s1">u = </span><span class="s2">&quot;a</span><span class="s0">\x80</span><span class="s2">b&quot;</span>
+<a name="l42"><span class="ln">42   </span></a>        <span class="s1">encoded_string = encode_string(u</span><span class="s0">, </span><span class="s2">&quot;ascii&quot;</span><span class="s0">, </span><span class="s2">&quot;strict&quot;</span><span class="s1">)</span>
+<a name="l43"><span class="ln">43   </span></a>
+<a name="l44"><span class="ln">44   </span></a>        <span class="s1">self.assertIsNone(encoded_string)</span>
+<a name="l45"><span class="ln">45   </span></a>
+<a name="l46"><span class="ln">46   </span></a>    <span class="s0">def </span><span class="s1">test_check_defaults(self):</span>
+<a name="l47"><span class="ln">47   </span></a>        <span class="s1">u = </span><span class="s2">&quot;a</span><span class="s0">\u01F7</span><span class="s2">b&quot;</span>
+<a name="l48"><span class="ln">48   </span></a>        <span class="s1">b = u.encode(</span><span class="s2">&quot;unicode_escape&quot;</span><span class="s0">, </span><span class="s2">&quot;backslashreplace&quot;</span><span class="s1">)</span>
+<a name="l49"><span class="ln">49   </span></a>        <span class="s1">encoded_string = encode_string(u)</span>
+<a name="l50"><span class="ln">50   </span></a>
+<a name="l51"><span class="ln">51   </span></a>        <span class="s1">self.assertEqual(encoded_string</span><span class="s0">, </span><span class="s1">b)</span>
+<a name="l52"><span class="ln">52   </span></a>
+<a name="l53"><span class="ln">53   </span></a>    <span class="s0">def </span><span class="s1">test_etype(self):</span>
+<a name="l54"><span class="ln">54   </span></a>        <span class="s1">u = </span><span class="s2">&quot;a</span><span class="s0">\x80</span><span class="s2">b&quot;</span>
+<a name="l55"><span class="ln">55   </span></a>        <span class="s1">self.assertRaises(SyntaxError</span><span class="s0">, </span><span class="s1">encode_string</span><span class="s0">, </span><span class="s1">u</span><span class="s0">, </span><span class="s2">&quot;ascii&quot;</span><span class="s0">, </span><span class="s2">&quot;strict&quot;</span><span class="s0">, </span><span class="s1">SyntaxError)</span>
+<a name="l56"><span class="ln">56   </span></a>
+<a name="l57"><span class="ln">57   </span></a>    <span class="s0">def </span><span class="s1">test_etype__invalid(self):</span>
+<a name="l58"><span class="ln">58   </span></a>        <span class="s4">&quot;&quot;&quot;Ensures invalid etypes are properly handled.&quot;&quot;&quot;</span>
+<a name="l59"><span class="ln">59   </span></a>
+<a name="l60"><span class="ln">60   </span></a>        <span class="s0">for </span><span class="s1">etype </span><span class="s0">in </span><span class="s1">(</span><span class="s2">&quot;SyntaxError&quot;</span><span class="s0">, </span><span class="s1">self):</span>
+<a name="l61"><span class="ln">61   </span></a>            <span class="s1">self.assertRaises(TypeError</span><span class="s0">, </span><span class="s1">encode_string</span><span class="s0">, </span><span class="s2">&quot;test&quot;</span><span class="s0">, </span><span class="s1">etype=etype)</span>
+<a name="l62"><span class="ln">62   </span></a>
+<a name="l63"><span class="ln">63   </span></a>    <span class="s0">def </span><span class="s1">test_string_with_null_bytes(self):</span>
+<a name="l64"><span class="ln">64   </span></a>        <span class="s1">b = </span><span class="s3">b&quot;a</span><span class="s0">\x00</span><span class="s3">b</span><span class="s0">\x00</span><span class="s3">c&quot;</span>
+<a name="l65"><span class="ln">65   </span></a>        <span class="s1">encoded_string = encode_string(b</span><span class="s0">, </span><span class="s1">etype=SyntaxError)</span>
+<a name="l66"><span class="ln">66   </span></a>        <span class="s1">encoded_decode_string = encode_string(b.decode()</span><span class="s0">, </span><span class="s2">&quot;ascii&quot;</span><span class="s0">, </span><span class="s2">&quot;strict&quot;</span><span class="s1">)</span>
+<a name="l67"><span class="ln">67   </span></a>
+<a name="l68"><span class="ln">68   </span></a>        <span class="s1">self.assertIs(encoded_string</span><span class="s0">, </span><span class="s1">b)</span>
+<a name="l69"><span class="ln">69   </span></a>        <span class="s1">self.assertEqual(encoded_decode_string</span><span class="s0">, </span><span class="s1">b)</span>
+<a name="l70"><span class="ln">70   </span></a>
+<a name="l71"><span class="ln">71   </span></a>    <span class="s0">try</span><span class="s1">:</span>
+<a name="l72"><span class="ln">72   </span></a>        <span class="s0">from </span><span class="s1">sys </span><span class="s0">import </span><span class="s1">getrefcount </span><span class="s0">as </span><span class="s1">_g</span>
+<a name="l73"><span class="ln">73   </span></a>
+<a name="l74"><span class="ln">74   </span></a>        <span class="s1">getrefcount = _g  </span><span class="s5"># This nonsense is for Python 3.x</span>
+<a name="l75"><span class="ln">75   </span></a>    <span class="s0">except </span><span class="s1">ImportError:</span>
+<a name="l76"><span class="ln">76   </span></a>        <span class="s0">pass</span>
+<a name="l77"><span class="ln">77   </span></a>    <span class="s0">else</span><span class="s1">:</span>
+<a name="l78"><span class="ln">78   </span></a>
+<a name="l79"><span class="ln">79   </span></a>        <span class="s0">def </span><span class="s1">test_refcount(self):</span>
+<a name="l80"><span class="ln">80   </span></a>            <span class="s1">bpath = </span><span class="s3">b&quot; This is a string that is not cached.&quot;</span><span class="s1">[</span><span class="s6">1</span><span class="s1">:]</span>
+<a name="l81"><span class="ln">81   </span></a>            <span class="s1">upath = bpath.decode(</span><span class="s2">&quot;ascii&quot;</span><span class="s1">)</span>
+<a name="l82"><span class="ln">82   </span></a>            <span class="s1">before = getrefcount(bpath)</span>
+<a name="l83"><span class="ln">83   </span></a>            <span class="s1">bpath = encode_string(bpath)</span>
+<a name="l84"><span class="ln">84   </span></a>            <span class="s1">self.assertEqual(getrefcount(bpath)</span><span class="s0">, </span><span class="s1">before)</span>
+<a name="l85"><span class="ln">85   </span></a>            <span class="s1">bpath = encode_string(upath)</span>
+<a name="l86"><span class="ln">86   </span></a>            <span class="s1">self.assertEqual(getrefcount(bpath)</span><span class="s0">, </span><span class="s1">before)</span>
+<a name="l87"><span class="ln">87   </span></a>
+<a name="l88"><span class="ln">88   </span></a>    <span class="s0">def </span><span class="s1">test_smp(self):</span>
+<a name="l89"><span class="ln">89   </span></a>        <span class="s1">utf_8 = </span><span class="s3">b&quot;a</span><span class="s0">\xF0\x93\x82\xA7</span><span class="s3">b&quot;</span>
+<a name="l90"><span class="ln">90   </span></a>        <span class="s1">u = </span><span class="s2">&quot;a</span><span class="s0">\U000130A7</span><span class="s2">b&quot;</span>
+<a name="l91"><span class="ln">91   </span></a>        <span class="s1">b = encode_string(u</span><span class="s0">, </span><span class="s2">&quot;utf-8&quot;</span><span class="s0">, </span><span class="s2">&quot;strict&quot;</span><span class="s0">, </span><span class="s1">AssertionError)</span>
+<a name="l92"><span class="ln">92   </span></a>        <span class="s1">self.assertEqual(b</span><span class="s0">, </span><span class="s1">utf_8)</span>
+<a name="l93"><span class="ln">93   </span></a>
+<a name="l94"><span class="ln">94   </span></a>    <span class="s0">def </span><span class="s1">test_pathlib_obj(self):</span>
+<a name="l95"><span class="ln">95   </span></a>        <span class="s4">&quot;&quot;&quot;Test loading string representation of pathlib object&quot;&quot;&quot;</span>
+<a name="l96"><span class="ln">96   </span></a>        <span class="s2">&quot;&quot;&quot; 
+<a name="l97"><span class="ln">97   </span></a>        We do this because pygame functions internally use pg_EncodeString 
+<a name="l98"><span class="ln">98   </span></a>        to decode the filenames passed to them. So if we test that here, we 
+<a name="l99"><span class="ln">99   </span></a>        can safely assume that all those functions do not have any issues 
+<a name="l100"><span class="ln">100  </span></a>        with pathlib objects 
+<a name="l101"><span class="ln">101  </span></a>        &quot;&quot;&quot;</span>
+<a name="l102"><span class="ln">102  </span></a>        <span class="s1">encoded = encode_string(pathlib.PurePath(</span><span class="s2">&quot;foo&quot;</span><span class="s1">)</span><span class="s0">, </span><span class="s2">&quot;utf-8&quot;</span><span class="s1">)</span>
+<a name="l103"><span class="ln">103  </span></a>        <span class="s1">self.assertEqual(encoded</span><span class="s0">, </span><span class="s3">b&quot;foo&quot;</span><span class="s1">)</span>
+<a name="l104"><span class="ln">104  </span></a>
+<a name="l105"><span class="ln">105  </span></a>        <span class="s1">encoded = encode_string(pathlib.Path(</span><span class="s2">&quot;baz&quot;</span><span class="s1">))</span>
+<a name="l106"><span class="ln">106  </span></a>        <span class="s1">self.assertEqual(encoded</span><span class="s0">, </span><span class="s3">b&quot;baz&quot;</span><span class="s1">)</span>
+<a name="l107"><span class="ln">107  </span></a>
+<a name="l108"><span class="ln">108  </span></a>
+<a name="l109"><span class="ln">109  </span></a><span class="s0">class </span><span class="s1">RWopsEncodeFilePathTest(unittest.TestCase):</span>
+<a name="l110"><span class="ln">110  </span></a>    <span class="s5"># Most tests can be skipped since RWopsEncodeFilePath wraps</span>
+<a name="l111"><span class="ln">111  </span></a>    <span class="s5"># RWopsEncodeString</span>
+<a name="l112"><span class="ln">112  </span></a>    <span class="s0">def </span><span class="s1">test_encoding(self):</span>
+<a name="l113"><span class="ln">113  </span></a>        <span class="s1">u = </span><span class="s2">&quot;Hello&quot;</span>
+<a name="l114"><span class="ln">114  </span></a>        <span class="s1">encoded_file_path = encode_file_path(u)</span>
+<a name="l115"><span class="ln">115  </span></a>
+<a name="l116"><span class="ln">116  </span></a>        <span class="s1">self.assertIsInstance(encoded_file_path</span><span class="s0">, </span><span class="s1">bytes)</span>
+<a name="l117"><span class="ln">117  </span></a>
+<a name="l118"><span class="ln">118  </span></a>    <span class="s0">def </span><span class="s1">test_error_fowarding(self):</span>
+<a name="l119"><span class="ln">119  </span></a>        <span class="s1">self.assertRaises(SyntaxError</span><span class="s0">, </span><span class="s1">encode_file_path)</span>
+<a name="l120"><span class="ln">120  </span></a>
+<a name="l121"><span class="ln">121  </span></a>    <span class="s0">def </span><span class="s1">test_path_with_null_bytes(self):</span>
+<a name="l122"><span class="ln">122  </span></a>        <span class="s1">b = </span><span class="s3">b&quot;a</span><span class="s0">\x00</span><span class="s3">b</span><span class="s0">\x00</span><span class="s3">c&quot;</span>
+<a name="l123"><span class="ln">123  </span></a>        <span class="s1">encoded_file_path = encode_file_path(b)</span>
+<a name="l124"><span class="ln">124  </span></a>
+<a name="l125"><span class="ln">125  </span></a>        <span class="s1">self.assertIsNone(encoded_file_path)</span>
+<a name="l126"><span class="ln">126  </span></a>
+<a name="l127"><span class="ln">127  </span></a>    <span class="s0">def </span><span class="s1">test_etype(self):</span>
+<a name="l128"><span class="ln">128  </span></a>        <span class="s1">b = </span><span class="s3">b&quot;a</span><span class="s0">\x00</span><span class="s3">b</span><span class="s0">\x00</span><span class="s3">c&quot;</span>
+<a name="l129"><span class="ln">129  </span></a>        <span class="s1">self.assertRaises(TypeError</span><span class="s0">, </span><span class="s1">encode_file_path</span><span class="s0">, </span><span class="s1">b</span><span class="s0">, </span><span class="s1">TypeError)</span>
+<a name="l130"><span class="ln">130  </span></a>
+<a name="l131"><span class="ln">131  </span></a>    <span class="s0">def </span><span class="s1">test_etype__invalid(self):</span>
+<a name="l132"><span class="ln">132  </span></a>        <span class="s4">&quot;&quot;&quot;Ensures invalid etypes are properly handled.&quot;&quot;&quot;</span>
+<a name="l133"><span class="ln">133  </span></a>
+<a name="l134"><span class="ln">134  </span></a>        <span class="s0">for </span><span class="s1">etype </span><span class="s0">in </span><span class="s1">(</span><span class="s2">&quot;SyntaxError&quot;</span><span class="s0">, </span><span class="s1">self):</span>
+<a name="l135"><span class="ln">135  </span></a>            <span class="s1">self.assertRaises(TypeError</span><span class="s0">, </span><span class="s1">encode_file_path</span><span class="s0">, </span><span class="s2">&quot;test&quot;</span><span class="s0">, </span><span class="s1">etype)</span>
+<a name="l136"><span class="ln">136  </span></a>
+<a name="l137"><span class="ln">137  </span></a>
+<a name="l138"><span class="ln">138  </span></a><span class="s0">if </span><span class="s1">__name__ == </span><span class="s2">&quot;__main__&quot;</span><span class="s1">:</span>
+<a name="l139"><span class="ln">139  </span></a>    <span class="s1">unittest.main()</span>
+<a name="l140"><span class="ln">140  </span></a></pre>
+</body>
+</html>

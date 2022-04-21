@@ -1,0 +1,126 @@
+<html>
+<head>
+<title>tests.rst.txt</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #a9b7c6;}
+.ln { color: #606366; font-weight: normal; font-style: normal; }
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+tests.rst.txt</font>
+</center></td></tr></table>
+<pre><a name="l1"><span class="ln">1    </span></a><span class="s0">.. include:: common.txt</span>
+<a name="l2"><span class="ln">2    </span></a>
+<a name="l3"><span class="ln">3    </span></a><span class="s0">:mod:`pygame.tests`</span>
+<a name="l4"><span class="ln">4    </span></a><span class="s0">===================</span>
+<a name="l5"><span class="ln">5    </span></a>
+<a name="l6"><span class="ln">6    </span></a><span class="s0">.. module:: pygame.tests</span>
+<a name="l7"><span class="ln">7    </span></a>   <span class="s0">:synopsis: Pygame unit test suite package</span>
+<a name="l8"><span class="ln">8    </span></a>
+<a name="l9"><span class="ln">9    </span></a><span class="s0">| :sl:`Pygame unit test suite package`</span>
+<a name="l10"><span class="ln">10   </span></a>
+<a name="l11"><span class="ln">11   </span></a><span class="s0">A quick way to run the test suite package from the command line is to import</span>
+<a name="l12"><span class="ln">12   </span></a><span class="s0">the go submodule with the Python -m option:</span>
+<a name="l13"><span class="ln">13   </span></a>
+<a name="l14"><span class="ln">14   </span></a><span class="s0">::</span>
+<a name="l15"><span class="ln">15   </span></a>
+<a name="l16"><span class="ln">16   </span></a>  <span class="s0">python -m pygame.tests [&lt;test options&gt;]</span>
+<a name="l17"><span class="ln">17   </span></a>
+<a name="l18"><span class="ln">18   </span></a><span class="s0">Command line option --help displays a usage message. Available options</span>
+<a name="l19"><span class="ln">19   </span></a><span class="s0">correspond to the :func:`pygame.tests.run` arguments.</span>
+<a name="l20"><span class="ln">20   </span></a>
+<a name="l21"><span class="ln">21   </span></a><span class="s0">The xxxx_test submodules of the tests package are unit test suites for</span>
+<a name="l22"><span class="ln">22   </span></a><span class="s0">individual parts of pygame. Each can also be run as a main program. This is</span>
+<a name="l23"><span class="ln">23   </span></a><span class="s0">useful if the test, such as cdrom_test, is interactive.</span>
+<a name="l24"><span class="ln">24   </span></a>
+<a name="l25"><span class="ln">25   </span></a><span class="s0">For pygame development the test suite can be run from a pygame distribution</span>
+<a name="l26"><span class="ln">26   </span></a><span class="s0">root directory. Program ``run_tests.py`` is provided for convenience, though</span>
+<a name="l27"><span class="ln">27   </span></a><span class="s0">test/go.py can be run directly.</span>
+<a name="l28"><span class="ln">28   </span></a>
+<a name="l29"><span class="ln">29   </span></a><span class="s0">Module level tags control which modules are included in a unit test run. Tags</span>
+<a name="l30"><span class="ln">30   </span></a><span class="s0">are assigned to a unit test module with a corresponding &lt;name&gt;_tags.py module.</span>
+<a name="l31"><span class="ln">31   </span></a><span class="s0">The tags module has the global __tags__, a list of tag names. For example,</span>
+<a name="l32"><span class="ln">32   </span></a><span class="s0">``cdrom_test.py`` has a tag file ``cdrom_tags.py`` containing a tags list that</span>
+<a name="l33"><span class="ln">33   </span></a><span class="s0">has the 'interactive' string. The 'interactive' tag indicates ``cdrom_test.py``</span>
+<a name="l34"><span class="ln">34   </span></a><span class="s0">expects user input. It is excluded from a ``run_tests.py`` or</span>
+<a name="l35"><span class="ln">35   </span></a><span class="s0">``pygame.tests.go`` run. Two other tags that are excluded are 'ignore' and</span>
+<a name="l36"><span class="ln">36   </span></a><span class="s0">'subprocess_ignore'. These two tags indicate unit tests that will not run on a</span>
+<a name="l37"><span class="ln">37   </span></a><span class="s0">particular platform, or for which no corresponding pygame module is available.</span>
+<a name="l38"><span class="ln">38   </span></a><span class="s0">The test runner will list each excluded module along with the tag responsible.</span>
+<a name="l39"><span class="ln">39   </span></a>
+<a name="l40"><span class="ln">40   </span></a><span class="s0">.. function:: run</span>
+<a name="l41"><span class="ln">41   </span></a>
+<a name="l42"><span class="ln">42   </span></a>   <span class="s0">| :sl:`Run the pygame unit test suite`</span>
+<a name="l43"><span class="ln">43   </span></a>   <span class="s0">| :sg:`run(*args, **kwds) -&gt; tuple`</span>
+<a name="l44"><span class="ln">44   </span></a>
+<a name="l45"><span class="ln">45   </span></a>   <span class="s0">Positional arguments (optional):</span>
+<a name="l46"><span class="ln">46   </span></a>
+<a name="l47"><span class="ln">47   </span></a>   <span class="s0">::</span>
+<a name="l48"><span class="ln">48   </span></a>
+<a name="l49"><span class="ln">49   </span></a>       <span class="s0">The names of tests to include. If omitted then all tests are run. Test names</span>
+<a name="l50"><span class="ln">50   </span></a>       <span class="s0">need not include the trailing '_test'.</span>
+<a name="l51"><span class="ln">51   </span></a>
+<a name="l52"><span class="ln">52   </span></a>   <span class="s0">Keyword arguments:</span>
+<a name="l53"><span class="ln">53   </span></a>
+<a name="l54"><span class="ln">54   </span></a>   <span class="s0">::</span>
+<a name="l55"><span class="ln">55   </span></a>
+<a name="l56"><span class="ln">56   </span></a>       <span class="s0">incomplete - fail incomplete tests (default False)</span>
+<a name="l57"><span class="ln">57   </span></a>       <span class="s0">nosubprocess - run all test suites in the current process</span>
+<a name="l58"><span class="ln">58   </span></a>                      <span class="s0">(default False, use separate subprocesses)</span>
+<a name="l59"><span class="ln">59   </span></a>       <span class="s0">dump - dump failures/errors as dict ready to eval (default False)</span>
+<a name="l60"><span class="ln">60   </span></a>       <span class="s0">file - if provided, the name of a file into which to dump failures/errors</span>
+<a name="l61"><span class="ln">61   </span></a>       <span class="s0">timings - if provided, the number of times to run each individual test to</span>
+<a name="l62"><span class="ln">62   </span></a>                 <span class="s0">get an average run time (default is run each test once)</span>
+<a name="l63"><span class="ln">63   </span></a>       <span class="s0">exclude - A list of TAG names to exclude from the run</span>
+<a name="l64"><span class="ln">64   </span></a>       <span class="s0">show_output - show silenced stderr/stdout on errors (default False)</span>
+<a name="l65"><span class="ln">65   </span></a>       <span class="s0">all - dump all results, not just errors (default False)</span>
+<a name="l66"><span class="ln">66   </span></a>       <span class="s0">randomize - randomize order of tests (default False)</span>
+<a name="l67"><span class="ln">67   </span></a>       <span class="s0">seed - if provided, a seed randomizer integer</span>
+<a name="l68"><span class="ln">68   </span></a>       <span class="s0">multi_thread - if provided, the number of THREADS in which to run</span>
+<a name="l69"><span class="ln">69   </span></a>                      <span class="s0">subprocessed tests</span>
+<a name="l70"><span class="ln">70   </span></a>       <span class="s0">time_out - if subprocess is True then the time limit in seconds before</span>
+<a name="l71"><span class="ln">71   </span></a>                  <span class="s0">killing a test (default 30)</span>
+<a name="l72"><span class="ln">72   </span></a>       <span class="s0">fake - if provided, the name of the fake tests package in the</span>
+<a name="l73"><span class="ln">73   </span></a>              <span class="s0">run_tests__tests subpackage to run instead of the normal</span>
+<a name="l74"><span class="ln">74   </span></a>              <span class="s0">pygame tests</span>
+<a name="l75"><span class="ln">75   </span></a>       <span class="s0">python - the path to a python executable to run subprocessed tests</span>
+<a name="l76"><span class="ln">76   </span></a>                <span class="s0">(default sys.executable)</span>
+<a name="l77"><span class="ln">77   </span></a>
+<a name="l78"><span class="ln">78   </span></a>   <span class="s0">Return value:</span>
+<a name="l79"><span class="ln">79   </span></a>
+<a name="l80"><span class="ln">80   </span></a>   <span class="s0">::</span>
+<a name="l81"><span class="ln">81   </span></a>
+<a name="l82"><span class="ln">82   </span></a>       <span class="s0">A tuple of total number of tests run, dictionary of error information.</span>
+<a name="l83"><span class="ln">83   </span></a>       <span class="s0">The dictionary is empty if no errors were recorded.</span>
+<a name="l84"><span class="ln">84   </span></a>
+<a name="l85"><span class="ln">85   </span></a>   <span class="s0">By default individual test modules are run in separate subprocesses. This</span>
+<a name="l86"><span class="ln">86   </span></a>   <span class="s0">recreates normal pygame usage where ``pygame.init()`` and ``pygame.quit()``</span>
+<a name="l87"><span class="ln">87   </span></a>   <span class="s0">are called only once per program execution, and avoids unfortunate</span>
+<a name="l88"><span class="ln">88   </span></a>   <span class="s0">interactions between test modules. Also, a time limit is placed on test</span>
+<a name="l89"><span class="ln">89   </span></a>   <span class="s0">execution, so frozen tests are killed when there time allotment expired. Use</span>
+<a name="l90"><span class="ln">90   </span></a>   <span class="s0">the single process option if threading is not working properly or if tests</span>
+<a name="l91"><span class="ln">91   </span></a>   <span class="s0">are taking too long. It is not guaranteed that all tests will pass in single</span>
+<a name="l92"><span class="ln">92   </span></a>   <span class="s0">process mode.</span>
+<a name="l93"><span class="ln">93   </span></a>
+<a name="l94"><span class="ln">94   </span></a>   <span class="s0">Tests are run in a randomized order if the randomize argument is True or a</span>
+<a name="l95"><span class="ln">95   </span></a>   <span class="s0">seed argument is provided. If no seed integer is provided then the system</span>
+<a name="l96"><span class="ln">96   </span></a>   <span class="s0">time is used.</span>
+<a name="l97"><span class="ln">97   </span></a>
+<a name="l98"><span class="ln">98   </span></a>   <span class="s0">Individual test modules may have a __tags__ attribute, a list of tag strings</span>
+<a name="l99"><span class="ln">99   </span></a>   <span class="s0">used to selectively omit modules from a run. By default only 'interactive'</span>
+<a name="l100"><span class="ln">100  </span></a>   <span class="s0">modules such as cdrom_test are ignored. An interactive module must be run</span>
+<a name="l101"><span class="ln">101  </span></a>   <span class="s0">from the console as a Python program.</span>
+<a name="l102"><span class="ln">102  </span></a>
+<a name="l103"><span class="ln">103  </span></a>   <span class="s0">This function can only be called once per Python session. It is not</span>
+<a name="l104"><span class="ln">104  </span></a>   <span class="s0">reentrant.</span>
+<a name="l105"><span class="ln">105  </span></a>
+<a name="l106"><span class="ln">106  </span></a>   <span class="s0">.. ## pygame.tests.run ##</span>
+<a name="l107"><span class="ln">107  </span></a>
+<a name="l108"><span class="ln">108  </span></a><span class="s0">.. ## pygame.tests ##</span>
+<a name="l109"><span class="ln">109  </span></a></pre>
+</body>
+</html>

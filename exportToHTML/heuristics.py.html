@@ -1,0 +1,157 @@
+<html>
+<head>
+<title>heuristics.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cc7832;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #6a8759;}
+.s3 { color: #629755; font-style: italic;}
+.s4 { color: #6897bb;}
+.ln { color: #606366; font-weight: normal; font-style: normal; }
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+heuristics.py</font>
+</center></td></tr></table>
+<pre><a name="l1"><span class="ln">1    </span></a><span class="s0">import </span><span class="s1">calendar</span>
+<a name="l2"><span class="ln">2    </span></a><span class="s0">import </span><span class="s1">time</span>
+<a name="l3"><span class="ln">3    </span></a>
+<a name="l4"><span class="ln">4    </span></a><span class="s0">from </span><span class="s1">email.utils </span><span class="s0">import </span><span class="s1">formatdate</span><span class="s0">, </span><span class="s1">parsedate</span><span class="s0">, </span><span class="s1">parsedate_tz</span>
+<a name="l5"><span class="ln">5    </span></a>
+<a name="l6"><span class="ln">6    </span></a><span class="s0">from </span><span class="s1">datetime </span><span class="s0">import </span><span class="s1">datetime</span><span class="s0">, </span><span class="s1">timedelta</span>
+<a name="l7"><span class="ln">7    </span></a>
+<a name="l8"><span class="ln">8    </span></a><span class="s1">TIME_FMT = </span><span class="s2">&quot;%a, %d %b %Y %H:%M:%S GMT&quot;</span>
+<a name="l9"><span class="ln">9    </span></a>
+<a name="l10"><span class="ln">10   </span></a>
+<a name="l11"><span class="ln">11   </span></a><span class="s0">def </span><span class="s1">expire_after(delta</span><span class="s0">, </span><span class="s1">date=</span><span class="s0">None</span><span class="s1">):</span>
+<a name="l12"><span class="ln">12   </span></a>    <span class="s1">date = date </span><span class="s0">or </span><span class="s1">datetime.utcnow()</span>
+<a name="l13"><span class="ln">13   </span></a>    <span class="s0">return </span><span class="s1">date + delta</span>
+<a name="l14"><span class="ln">14   </span></a>
+<a name="l15"><span class="ln">15   </span></a>
+<a name="l16"><span class="ln">16   </span></a><span class="s0">def </span><span class="s1">datetime_to_header(dt):</span>
+<a name="l17"><span class="ln">17   </span></a>    <span class="s0">return </span><span class="s1">formatdate(calendar.timegm(dt.timetuple()))</span>
+<a name="l18"><span class="ln">18   </span></a>
+<a name="l19"><span class="ln">19   </span></a>
+<a name="l20"><span class="ln">20   </span></a><span class="s0">class </span><span class="s1">BaseHeuristic(object):</span>
+<a name="l21"><span class="ln">21   </span></a>
+<a name="l22"><span class="ln">22   </span></a>    <span class="s0">def </span><span class="s1">warning(self</span><span class="s0">, </span><span class="s1">response):</span>
+<a name="l23"><span class="ln">23   </span></a>        <span class="s3">&quot;&quot;&quot; 
+<a name="l24"><span class="ln">24   </span></a>        Return a valid 1xx warning header value describing the cache 
+<a name="l25"><span class="ln">25   </span></a>        adjustments. 
+<a name="l26"><span class="ln">26   </span></a> 
+<a name="l27"><span class="ln">27   </span></a>        The response is provided too allow warnings like 113 
+<a name="l28"><span class="ln">28   </span></a>        http://tools.ietf.org/html/rfc7234#section-5.5.4 where we need 
+<a name="l29"><span class="ln">29   </span></a>        to explicitly say response is over 24 hours old. 
+<a name="l30"><span class="ln">30   </span></a>        &quot;&quot;&quot;</span>
+<a name="l31"><span class="ln">31   </span></a>        <span class="s0">return </span><span class="s2">'110 - &quot;Response is Stale&quot;'</span>
+<a name="l32"><span class="ln">32   </span></a>
+<a name="l33"><span class="ln">33   </span></a>    <span class="s0">def </span><span class="s1">update_headers(self</span><span class="s0">, </span><span class="s1">response):</span>
+<a name="l34"><span class="ln">34   </span></a>        <span class="s3">&quot;&quot;&quot;Update the response headers with any new headers. 
+<a name="l35"><span class="ln">35   </span></a> 
+<a name="l36"><span class="ln">36   </span></a>        NOTE: This SHOULD always include some Warning header to 
+<a name="l37"><span class="ln">37   </span></a>              signify that the response was cached by the client, not 
+<a name="l38"><span class="ln">38   </span></a>              by way of the provided headers. 
+<a name="l39"><span class="ln">39   </span></a>        &quot;&quot;&quot;</span>
+<a name="l40"><span class="ln">40   </span></a>        <span class="s0">return </span><span class="s1">{}</span>
+<a name="l41"><span class="ln">41   </span></a>
+<a name="l42"><span class="ln">42   </span></a>    <span class="s0">def </span><span class="s1">apply(self</span><span class="s0">, </span><span class="s1">response):</span>
+<a name="l43"><span class="ln">43   </span></a>        <span class="s1">updated_headers = self.update_headers(response)</span>
+<a name="l44"><span class="ln">44   </span></a>
+<a name="l45"><span class="ln">45   </span></a>        <span class="s0">if </span><span class="s1">updated_headers:</span>
+<a name="l46"><span class="ln">46   </span></a>            <span class="s1">response.headers.update(updated_headers)</span>
+<a name="l47"><span class="ln">47   </span></a>            <span class="s1">warning_header_value = self.warning(response)</span>
+<a name="l48"><span class="ln">48   </span></a>            <span class="s0">if </span><span class="s1">warning_header_value </span><span class="s0">is not None</span><span class="s1">:</span>
+<a name="l49"><span class="ln">49   </span></a>                <span class="s1">response.headers.update({</span><span class="s2">&quot;Warning&quot;</span><span class="s1">: warning_header_value})</span>
+<a name="l50"><span class="ln">50   </span></a>
+<a name="l51"><span class="ln">51   </span></a>        <span class="s0">return </span><span class="s1">response</span>
+<a name="l52"><span class="ln">52   </span></a>
+<a name="l53"><span class="ln">53   </span></a>
+<a name="l54"><span class="ln">54   </span></a><span class="s0">class </span><span class="s1">OneDayCache(BaseHeuristic):</span>
+<a name="l55"><span class="ln">55   </span></a>    <span class="s3">&quot;&quot;&quot; 
+<a name="l56"><span class="ln">56   </span></a>    Cache the response by providing an expires 1 day in the 
+<a name="l57"><span class="ln">57   </span></a>    future. 
+<a name="l58"><span class="ln">58   </span></a>    &quot;&quot;&quot;</span>
+<a name="l59"><span class="ln">59   </span></a>
+<a name="l60"><span class="ln">60   </span></a>    <span class="s0">def </span><span class="s1">update_headers(self</span><span class="s0">, </span><span class="s1">response):</span>
+<a name="l61"><span class="ln">61   </span></a>        <span class="s1">headers = {}</span>
+<a name="l62"><span class="ln">62   </span></a>
+<a name="l63"><span class="ln">63   </span></a>        <span class="s0">if </span><span class="s2">&quot;expires&quot; </span><span class="s0">not in </span><span class="s1">response.headers:</span>
+<a name="l64"><span class="ln">64   </span></a>            <span class="s1">date = parsedate(response.headers[</span><span class="s2">&quot;date&quot;</span><span class="s1">])</span>
+<a name="l65"><span class="ln">65   </span></a>            <span class="s1">expires = expire_after(timedelta(days=</span><span class="s4">1</span><span class="s1">)</span><span class="s0">, </span><span class="s1">date=datetime(*date[:</span><span class="s4">6</span><span class="s1">]))</span>
+<a name="l66"><span class="ln">66   </span></a>            <span class="s1">headers[</span><span class="s2">&quot;expires&quot;</span><span class="s1">] = datetime_to_header(expires)</span>
+<a name="l67"><span class="ln">67   </span></a>            <span class="s1">headers[</span><span class="s2">&quot;cache-control&quot;</span><span class="s1">] = </span><span class="s2">&quot;public&quot;</span>
+<a name="l68"><span class="ln">68   </span></a>        <span class="s0">return </span><span class="s1">headers</span>
+<a name="l69"><span class="ln">69   </span></a>
+<a name="l70"><span class="ln">70   </span></a>
+<a name="l71"><span class="ln">71   </span></a><span class="s0">class </span><span class="s1">ExpiresAfter(BaseHeuristic):</span>
+<a name="l72"><span class="ln">72   </span></a>    <span class="s3">&quot;&quot;&quot; 
+<a name="l73"><span class="ln">73   </span></a>    Cache **all** requests for a defined time period. 
+<a name="l74"><span class="ln">74   </span></a>    &quot;&quot;&quot;</span>
+<a name="l75"><span class="ln">75   </span></a>
+<a name="l76"><span class="ln">76   </span></a>    <span class="s0">def </span><span class="s1">__init__(self</span><span class="s0">, </span><span class="s1">**kw):</span>
+<a name="l77"><span class="ln">77   </span></a>        <span class="s1">self.delta = timedelta(**kw)</span>
+<a name="l78"><span class="ln">78   </span></a>
+<a name="l79"><span class="ln">79   </span></a>    <span class="s0">def </span><span class="s1">update_headers(self</span><span class="s0">, </span><span class="s1">response):</span>
+<a name="l80"><span class="ln">80   </span></a>        <span class="s1">expires = expire_after(self.delta)</span>
+<a name="l81"><span class="ln">81   </span></a>        <span class="s0">return </span><span class="s1">{</span><span class="s2">&quot;expires&quot;</span><span class="s1">: datetime_to_header(expires)</span><span class="s0">, </span><span class="s2">&quot;cache-control&quot;</span><span class="s1">: </span><span class="s2">&quot;public&quot;</span><span class="s1">}</span>
+<a name="l82"><span class="ln">82   </span></a>
+<a name="l83"><span class="ln">83   </span></a>    <span class="s0">def </span><span class="s1">warning(self</span><span class="s0">, </span><span class="s1">response):</span>
+<a name="l84"><span class="ln">84   </span></a>        <span class="s1">tmpl = </span><span class="s2">&quot;110 - Automatically cached for %s. Response might be stale&quot;</span>
+<a name="l85"><span class="ln">85   </span></a>        <span class="s0">return </span><span class="s1">tmpl % self.delta</span>
+<a name="l86"><span class="ln">86   </span></a>
+<a name="l87"><span class="ln">87   </span></a>
+<a name="l88"><span class="ln">88   </span></a><span class="s0">class </span><span class="s1">LastModified(BaseHeuristic):</span>
+<a name="l89"><span class="ln">89   </span></a>    <span class="s3">&quot;&quot;&quot; 
+<a name="l90"><span class="ln">90   </span></a>    If there is no Expires header already, fall back on Last-Modified 
+<a name="l91"><span class="ln">91   </span></a>    using the heuristic from 
+<a name="l92"><span class="ln">92   </span></a>    http://tools.ietf.org/html/rfc7234#section-4.2.2 
+<a name="l93"><span class="ln">93   </span></a>    to calculate a reasonable value. 
+<a name="l94"><span class="ln">94   </span></a> 
+<a name="l95"><span class="ln">95   </span></a>    Firefox also does something like this per 
+<a name="l96"><span class="ln">96   </span></a>    https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching_FAQ 
+<a name="l97"><span class="ln">97   </span></a>    http://lxr.mozilla.org/mozilla-release/source/netwerk/protocol/http/nsHttpResponseHead.cpp#397 
+<a name="l98"><span class="ln">98   </span></a>    Unlike mozilla we limit this to 24-hr. 
+<a name="l99"><span class="ln">99   </span></a>    &quot;&quot;&quot;</span>
+<a name="l100"><span class="ln">100  </span></a>    <span class="s1">cacheable_by_default_statuses = {</span>
+<a name="l101"><span class="ln">101  </span></a>        <span class="s4">200</span><span class="s0">, </span><span class="s4">203</span><span class="s0">, </span><span class="s4">204</span><span class="s0">, </span><span class="s4">206</span><span class="s0">, </span><span class="s4">300</span><span class="s0">, </span><span class="s4">301</span><span class="s0">, </span><span class="s4">404</span><span class="s0">, </span><span class="s4">405</span><span class="s0">, </span><span class="s4">410</span><span class="s0">, </span><span class="s4">414</span><span class="s0">, </span><span class="s4">501</span>
+<a name="l102"><span class="ln">102  </span></a>    <span class="s1">}</span>
+<a name="l103"><span class="ln">103  </span></a>
+<a name="l104"><span class="ln">104  </span></a>    <span class="s0">def </span><span class="s1">update_headers(self</span><span class="s0">, </span><span class="s1">resp):</span>
+<a name="l105"><span class="ln">105  </span></a>        <span class="s1">headers = resp.headers</span>
+<a name="l106"><span class="ln">106  </span></a>
+<a name="l107"><span class="ln">107  </span></a>        <span class="s0">if </span><span class="s2">&quot;expires&quot; </span><span class="s0">in </span><span class="s1">headers:</span>
+<a name="l108"><span class="ln">108  </span></a>            <span class="s0">return </span><span class="s1">{}</span>
+<a name="l109"><span class="ln">109  </span></a>
+<a name="l110"><span class="ln">110  </span></a>        <span class="s0">if </span><span class="s2">&quot;cache-control&quot; </span><span class="s0">in </span><span class="s1">headers </span><span class="s0">and </span><span class="s1">headers[</span><span class="s2">&quot;cache-control&quot;</span><span class="s1">] != </span><span class="s2">&quot;public&quot;</span><span class="s1">:</span>
+<a name="l111"><span class="ln">111  </span></a>            <span class="s0">return </span><span class="s1">{}</span>
+<a name="l112"><span class="ln">112  </span></a>
+<a name="l113"><span class="ln">113  </span></a>        <span class="s0">if </span><span class="s1">resp.status </span><span class="s0">not in </span><span class="s1">self.cacheable_by_default_statuses:</span>
+<a name="l114"><span class="ln">114  </span></a>            <span class="s0">return </span><span class="s1">{}</span>
+<a name="l115"><span class="ln">115  </span></a>
+<a name="l116"><span class="ln">116  </span></a>        <span class="s0">if </span><span class="s2">&quot;date&quot; </span><span class="s0">not in </span><span class="s1">headers </span><span class="s0">or </span><span class="s2">&quot;last-modified&quot; </span><span class="s0">not in </span><span class="s1">headers:</span>
+<a name="l117"><span class="ln">117  </span></a>            <span class="s0">return </span><span class="s1">{}</span>
+<a name="l118"><span class="ln">118  </span></a>
+<a name="l119"><span class="ln">119  </span></a>        <span class="s1">date = calendar.timegm(parsedate_tz(headers[</span><span class="s2">&quot;date&quot;</span><span class="s1">]))</span>
+<a name="l120"><span class="ln">120  </span></a>        <span class="s1">last_modified = parsedate(headers[</span><span class="s2">&quot;last-modified&quot;</span><span class="s1">])</span>
+<a name="l121"><span class="ln">121  </span></a>        <span class="s0">if </span><span class="s1">date </span><span class="s0">is None or </span><span class="s1">last_modified </span><span class="s0">is None</span><span class="s1">:</span>
+<a name="l122"><span class="ln">122  </span></a>            <span class="s0">return </span><span class="s1">{}</span>
+<a name="l123"><span class="ln">123  </span></a>
+<a name="l124"><span class="ln">124  </span></a>        <span class="s1">now = time.time()</span>
+<a name="l125"><span class="ln">125  </span></a>        <span class="s1">current_age = max(</span><span class="s4">0</span><span class="s0">, </span><span class="s1">now - date)</span>
+<a name="l126"><span class="ln">126  </span></a>        <span class="s1">delta = date - calendar.timegm(last_modified)</span>
+<a name="l127"><span class="ln">127  </span></a>        <span class="s1">freshness_lifetime = max(</span><span class="s4">0</span><span class="s0">, </span><span class="s1">min(delta / </span><span class="s4">10</span><span class="s0">, </span><span class="s4">24 </span><span class="s1">* </span><span class="s4">3600</span><span class="s1">))</span>
+<a name="l128"><span class="ln">128  </span></a>        <span class="s0">if </span><span class="s1">freshness_lifetime &lt;= current_age:</span>
+<a name="l129"><span class="ln">129  </span></a>            <span class="s0">return </span><span class="s1">{}</span>
+<a name="l130"><span class="ln">130  </span></a>
+<a name="l131"><span class="ln">131  </span></a>        <span class="s1">expires = date + freshness_lifetime</span>
+<a name="l132"><span class="ln">132  </span></a>        <span class="s0">return </span><span class="s1">{</span><span class="s2">&quot;expires&quot;</span><span class="s1">: time.strftime(TIME_FMT</span><span class="s0">, </span><span class="s1">time.gmtime(expires))}</span>
+<a name="l133"><span class="ln">133  </span></a>
+<a name="l134"><span class="ln">134  </span></a>    <span class="s0">def </span><span class="s1">warning(self</span><span class="s0">, </span><span class="s1">resp):</span>
+<a name="l135"><span class="ln">135  </span></a>        <span class="s0">return None</span>
+<a name="l136"><span class="ln">136  </span></a></pre>
+</body>
+</html>

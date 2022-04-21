@@ -1,0 +1,104 @@
+<html>
+<head>
+<title>filewrapper.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cc7832;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #629755; font-style: italic;}
+.s3 { color: #808080;}
+.s4 { color: #6a8759;}
+.s5 { color: #6897bb;}
+.s6 { color: #a5c261;}
+.ln { color: #606366; font-weight: normal; font-style: normal; }
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+filewrapper.py</font>
+</center></td></tr></table>
+<pre><a name="l1"><span class="ln">1    </span></a><span class="s0">from </span><span class="s1">io </span><span class="s0">import </span><span class="s1">BytesIO</span>
+<a name="l2"><span class="ln">2    </span></a>
+<a name="l3"><span class="ln">3    </span></a>
+<a name="l4"><span class="ln">4    </span></a><span class="s0">class </span><span class="s1">CallbackFileWrapper(object):</span>
+<a name="l5"><span class="ln">5    </span></a>    <span class="s2">&quot;&quot;&quot; 
+<a name="l6"><span class="ln">6    </span></a>    Small wrapper around a fp object which will tee everything read into a 
+<a name="l7"><span class="ln">7    </span></a>    buffer, and when that file is closed it will execute a callback with the 
+<a name="l8"><span class="ln">8    </span></a>    contents of that buffer. 
+<a name="l9"><span class="ln">9    </span></a> 
+<a name="l10"><span class="ln">10   </span></a>    All attributes are proxied to the underlying file object. 
+<a name="l11"><span class="ln">11   </span></a> 
+<a name="l12"><span class="ln">12   </span></a>    This class uses members with a double underscore (__) leading prefix so as 
+<a name="l13"><span class="ln">13   </span></a>    not to accidentally shadow an attribute. 
+<a name="l14"><span class="ln">14   </span></a>    &quot;&quot;&quot;</span>
+<a name="l15"><span class="ln">15   </span></a>
+<a name="l16"><span class="ln">16   </span></a>    <span class="s0">def </span><span class="s1">__init__(self</span><span class="s0">, </span><span class="s1">fp</span><span class="s0">, </span><span class="s1">callback):</span>
+<a name="l17"><span class="ln">17   </span></a>        <span class="s1">self.__buf = BytesIO()</span>
+<a name="l18"><span class="ln">18   </span></a>        <span class="s1">self.__fp = fp</span>
+<a name="l19"><span class="ln">19   </span></a>        <span class="s1">self.__callback = callback</span>
+<a name="l20"><span class="ln">20   </span></a>
+<a name="l21"><span class="ln">21   </span></a>    <span class="s0">def </span><span class="s1">__getattr__(self</span><span class="s0">, </span><span class="s1">name):</span>
+<a name="l22"><span class="ln">22   </span></a>        <span class="s3"># The vaguaries of garbage collection means that self.__fp is</span>
+<a name="l23"><span class="ln">23   </span></a>        <span class="s3"># not always set.  By using __getattribute__ and the private</span>
+<a name="l24"><span class="ln">24   </span></a>        <span class="s3"># name[0] allows looking up the attribute value and raising an</span>
+<a name="l25"><span class="ln">25   </span></a>        <span class="s3"># AttributeError when it doesn't exist. This stop thigns from</span>
+<a name="l26"><span class="ln">26   </span></a>        <span class="s3"># infinitely recursing calls to getattr in the case where</span>
+<a name="l27"><span class="ln">27   </span></a>        <span class="s3"># self.__fp hasn't been set.</span>
+<a name="l28"><span class="ln">28   </span></a>        <span class="s3">#</span>
+<a name="l29"><span class="ln">29   </span></a>        <span class="s3"># [0] https://docs.python.org/2/reference/expressions.html#atom-identifiers</span>
+<a name="l30"><span class="ln">30   </span></a>        <span class="s1">fp = self.__getattribute__(</span><span class="s4">&quot;_CallbackFileWrapper__fp&quot;</span><span class="s1">)</span>
+<a name="l31"><span class="ln">31   </span></a>        <span class="s0">return </span><span class="s1">getattr(fp</span><span class="s0">, </span><span class="s1">name)</span>
+<a name="l32"><span class="ln">32   </span></a>
+<a name="l33"><span class="ln">33   </span></a>    <span class="s0">def </span><span class="s1">__is_fp_closed(self):</span>
+<a name="l34"><span class="ln">34   </span></a>        <span class="s0">try</span><span class="s1">:</span>
+<a name="l35"><span class="ln">35   </span></a>            <span class="s0">return </span><span class="s1">self.__fp.fp </span><span class="s0">is None</span>
+<a name="l36"><span class="ln">36   </span></a>
+<a name="l37"><span class="ln">37   </span></a>        <span class="s0">except </span><span class="s1">AttributeError:</span>
+<a name="l38"><span class="ln">38   </span></a>            <span class="s0">pass</span>
+<a name="l39"><span class="ln">39   </span></a>
+<a name="l40"><span class="ln">40   </span></a>        <span class="s0">try</span><span class="s1">:</span>
+<a name="l41"><span class="ln">41   </span></a>            <span class="s0">return </span><span class="s1">self.__fp.closed</span>
+<a name="l42"><span class="ln">42   </span></a>
+<a name="l43"><span class="ln">43   </span></a>        <span class="s0">except </span><span class="s1">AttributeError:</span>
+<a name="l44"><span class="ln">44   </span></a>            <span class="s0">pass</span>
+<a name="l45"><span class="ln">45   </span></a>
+<a name="l46"><span class="ln">46   </span></a>        <span class="s3"># We just don't cache it then.</span>
+<a name="l47"><span class="ln">47   </span></a>        <span class="s3"># TODO: Add some logging here...</span>
+<a name="l48"><span class="ln">48   </span></a>        <span class="s0">return False</span>
+<a name="l49"><span class="ln">49   </span></a>
+<a name="l50"><span class="ln">50   </span></a>    <span class="s0">def </span><span class="s1">_close(self):</span>
+<a name="l51"><span class="ln">51   </span></a>        <span class="s0">if </span><span class="s1">self.__callback:</span>
+<a name="l52"><span class="ln">52   </span></a>            <span class="s1">self.__callback(self.__buf.getvalue())</span>
+<a name="l53"><span class="ln">53   </span></a>
+<a name="l54"><span class="ln">54   </span></a>        <span class="s3"># We assign this to None here, because otherwise we can get into</span>
+<a name="l55"><span class="ln">55   </span></a>        <span class="s3"># really tricky problems where the CPython interpreter dead locks</span>
+<a name="l56"><span class="ln">56   </span></a>        <span class="s3"># because the callback is holding a reference to something which</span>
+<a name="l57"><span class="ln">57   </span></a>        <span class="s3"># has a __del__ method. Setting this to None breaks the cycle</span>
+<a name="l58"><span class="ln">58   </span></a>        <span class="s3"># and allows the garbage collector to do it's thing normally.</span>
+<a name="l59"><span class="ln">59   </span></a>        <span class="s1">self.__callback = </span><span class="s0">None</span>
+<a name="l60"><span class="ln">60   </span></a>
+<a name="l61"><span class="ln">61   </span></a>    <span class="s0">def </span><span class="s1">read(self</span><span class="s0">, </span><span class="s1">amt=</span><span class="s0">None</span><span class="s1">):</span>
+<a name="l62"><span class="ln">62   </span></a>        <span class="s1">data = self.__fp.read(amt)</span>
+<a name="l63"><span class="ln">63   </span></a>        <span class="s1">self.__buf.write(data)</span>
+<a name="l64"><span class="ln">64   </span></a>        <span class="s0">if </span><span class="s1">self.__is_fp_closed():</span>
+<a name="l65"><span class="ln">65   </span></a>            <span class="s1">self._close()</span>
+<a name="l66"><span class="ln">66   </span></a>
+<a name="l67"><span class="ln">67   </span></a>        <span class="s0">return </span><span class="s1">data</span>
+<a name="l68"><span class="ln">68   </span></a>
+<a name="l69"><span class="ln">69   </span></a>    <span class="s0">def </span><span class="s1">_safe_read(self</span><span class="s0">, </span><span class="s1">amt):</span>
+<a name="l70"><span class="ln">70   </span></a>        <span class="s1">data = self.__fp._safe_read(amt)</span>
+<a name="l71"><span class="ln">71   </span></a>        <span class="s0">if </span><span class="s1">amt == </span><span class="s5">2 </span><span class="s0">and </span><span class="s1">data == </span><span class="s6">b&quot;</span><span class="s0">\r\n</span><span class="s6">&quot;</span><span class="s1">:</span>
+<a name="l72"><span class="ln">72   </span></a>            <span class="s3"># urllib executes this read to toss the CRLF at the end</span>
+<a name="l73"><span class="ln">73   </span></a>            <span class="s3"># of the chunk.</span>
+<a name="l74"><span class="ln">74   </span></a>            <span class="s0">return </span><span class="s1">data</span>
+<a name="l75"><span class="ln">75   </span></a>
+<a name="l76"><span class="ln">76   </span></a>        <span class="s1">self.__buf.write(data)</span>
+<a name="l77"><span class="ln">77   </span></a>        <span class="s0">if </span><span class="s1">self.__is_fp_closed():</span>
+<a name="l78"><span class="ln">78   </span></a>            <span class="s1">self._close()</span>
+<a name="l79"><span class="ln">79   </span></a>
+<a name="l80"><span class="ln">80   </span></a>        <span class="s0">return </span><span class="s1">data</span>
+<a name="l81"><span class="ln">81   </span></a></pre>
+</body>
+</html>

@@ -1,0 +1,304 @@
+<html>
+<head>
+<title>build_meta.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #629755; font-style: italic;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #cc7832;}
+.s3 { color: #6a8759;}
+.s4 { color: #808080;}
+.s5 { color: #6897bb;}
+.ln { color: #606366; font-weight: normal; font-style: normal; }
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+build_meta.py</font>
+</center></td></tr></table>
+<pre><a name="l1"><span class="ln">1    </span></a><span class="s0">&quot;&quot;&quot;A PEP 517 interface to setuptools 
+<a name="l2"><span class="ln">2    </span></a> 
+<a name="l3"><span class="ln">3    </span></a>Previously, when a user or a command line tool (let's call it a &quot;frontend&quot;) 
+<a name="l4"><span class="ln">4    </span></a>needed to make a request of setuptools to take a certain action, for 
+<a name="l5"><span class="ln">5    </span></a>example, generating a list of installation requirements, the frontend would 
+<a name="l6"><span class="ln">6    </span></a>would call &quot;setup.py egg_info&quot; or &quot;setup.py bdist_wheel&quot; on the command line. 
+<a name="l7"><span class="ln">7    </span></a> 
+<a name="l8"><span class="ln">8    </span></a>PEP 517 defines a different method of interfacing with setuptools. Rather 
+<a name="l9"><span class="ln">9    </span></a>than calling &quot;setup.py&quot; directly, the frontend should: 
+<a name="l10"><span class="ln">10   </span></a> 
+<a name="l11"><span class="ln">11   </span></a>  1. Set the current directory to the directory with a setup.py file 
+<a name="l12"><span class="ln">12   </span></a>  2. Import this module into a safe python interpreter (one in which 
+<a name="l13"><span class="ln">13   </span></a>     setuptools can potentially set global variables or crash hard). 
+<a name="l14"><span class="ln">14   </span></a>  3. Call one of the functions defined in PEP 517. 
+<a name="l15"><span class="ln">15   </span></a> 
+<a name="l16"><span class="ln">16   </span></a>What each function does is defined in PEP 517. However, here is a &quot;casual&quot; 
+<a name="l17"><span class="ln">17   </span></a>definition of the functions (this definition should not be relied on for 
+<a name="l18"><span class="ln">18   </span></a>bug reports or API stability): 
+<a name="l19"><span class="ln">19   </span></a> 
+<a name="l20"><span class="ln">20   </span></a>  - `build_wheel`: build a wheel in the folder and return the basename 
+<a name="l21"><span class="ln">21   </span></a>  - `get_requires_for_build_wheel`: get the `setup_requires` to build 
+<a name="l22"><span class="ln">22   </span></a>  - `prepare_metadata_for_build_wheel`: get the `install_requires` 
+<a name="l23"><span class="ln">23   </span></a>  - `build_sdist`: build an sdist in the folder and return the basename 
+<a name="l24"><span class="ln">24   </span></a>  - `get_requires_for_build_sdist`: get the `setup_requires` to build 
+<a name="l25"><span class="ln">25   </span></a> 
+<a name="l26"><span class="ln">26   </span></a>Again, this is not a formal definition! Just a &quot;taste&quot; of the module. 
+<a name="l27"><span class="ln">27   </span></a>&quot;&quot;&quot;</span>
+<a name="l28"><span class="ln">28   </span></a>
+<a name="l29"><span class="ln">29   </span></a><span class="s2">import </span><span class="s1">io</span>
+<a name="l30"><span class="ln">30   </span></a><span class="s2">import </span><span class="s1">os</span>
+<a name="l31"><span class="ln">31   </span></a><span class="s2">import </span><span class="s1">sys</span>
+<a name="l32"><span class="ln">32   </span></a><span class="s2">import </span><span class="s1">tokenize</span>
+<a name="l33"><span class="ln">33   </span></a><span class="s2">import </span><span class="s1">shutil</span>
+<a name="l34"><span class="ln">34   </span></a><span class="s2">import </span><span class="s1">contextlib</span>
+<a name="l35"><span class="ln">35   </span></a><span class="s2">import </span><span class="s1">tempfile</span>
+<a name="l36"><span class="ln">36   </span></a>
+<a name="l37"><span class="ln">37   </span></a><span class="s2">import </span><span class="s1">setuptools</span>
+<a name="l38"><span class="ln">38   </span></a><span class="s2">import </span><span class="s1">distutils</span>
+<a name="l39"><span class="ln">39   </span></a>
+<a name="l40"><span class="ln">40   </span></a><span class="s2">from </span><span class="s1">pkg_resources </span><span class="s2">import </span><span class="s1">parse_requirements</span>
+<a name="l41"><span class="ln">41   </span></a>
+<a name="l42"><span class="ln">42   </span></a><span class="s1">__all__ = [</span><span class="s3">'get_requires_for_build_sdist'</span><span class="s2">,</span>
+<a name="l43"><span class="ln">43   </span></a>           <span class="s3">'get_requires_for_build_wheel'</span><span class="s2">,</span>
+<a name="l44"><span class="ln">44   </span></a>           <span class="s3">'prepare_metadata_for_build_wheel'</span><span class="s2">,</span>
+<a name="l45"><span class="ln">45   </span></a>           <span class="s3">'build_wheel'</span><span class="s2">,</span>
+<a name="l46"><span class="ln">46   </span></a>           <span class="s3">'build_sdist'</span><span class="s2">,</span>
+<a name="l47"><span class="ln">47   </span></a>           <span class="s3">'__legacy__'</span><span class="s2">,</span>
+<a name="l48"><span class="ln">48   </span></a>           <span class="s3">'SetupRequirementsError'</span><span class="s1">]</span>
+<a name="l49"><span class="ln">49   </span></a>
+<a name="l50"><span class="ln">50   </span></a>
+<a name="l51"><span class="ln">51   </span></a><span class="s2">class </span><span class="s1">SetupRequirementsError(BaseException):</span>
+<a name="l52"><span class="ln">52   </span></a>    <span class="s2">def </span><span class="s1">__init__(self</span><span class="s2">, </span><span class="s1">specifiers):</span>
+<a name="l53"><span class="ln">53   </span></a>        <span class="s1">self.specifiers = specifiers</span>
+<a name="l54"><span class="ln">54   </span></a>
+<a name="l55"><span class="ln">55   </span></a>
+<a name="l56"><span class="ln">56   </span></a><span class="s2">class </span><span class="s1">Distribution(setuptools.dist.Distribution):</span>
+<a name="l57"><span class="ln">57   </span></a>    <span class="s2">def </span><span class="s1">fetch_build_eggs(self</span><span class="s2">, </span><span class="s1">specifiers):</span>
+<a name="l58"><span class="ln">58   </span></a>        <span class="s1">specifier_list = list(map(str</span><span class="s2">, </span><span class="s1">parse_requirements(specifiers)))</span>
+<a name="l59"><span class="ln">59   </span></a>
+<a name="l60"><span class="ln">60   </span></a>        <span class="s2">raise </span><span class="s1">SetupRequirementsError(specifier_list)</span>
+<a name="l61"><span class="ln">61   </span></a>
+<a name="l62"><span class="ln">62   </span></a>    <span class="s1">@classmethod</span>
+<a name="l63"><span class="ln">63   </span></a>    <span class="s1">@contextlib.contextmanager</span>
+<a name="l64"><span class="ln">64   </span></a>    <span class="s2">def </span><span class="s1">patch(cls):</span>
+<a name="l65"><span class="ln">65   </span></a>        <span class="s0">&quot;&quot;&quot; 
+<a name="l66"><span class="ln">66   </span></a>        Replace 
+<a name="l67"><span class="ln">67   </span></a>        distutils.dist.Distribution with this class 
+<a name="l68"><span class="ln">68   </span></a>        for the duration of this context. 
+<a name="l69"><span class="ln">69   </span></a>        &quot;&quot;&quot;</span>
+<a name="l70"><span class="ln">70   </span></a>        <span class="s1">orig = distutils.core.Distribution</span>
+<a name="l71"><span class="ln">71   </span></a>        <span class="s1">distutils.core.Distribution = cls</span>
+<a name="l72"><span class="ln">72   </span></a>        <span class="s2">try</span><span class="s1">:</span>
+<a name="l73"><span class="ln">73   </span></a>            <span class="s2">yield</span>
+<a name="l74"><span class="ln">74   </span></a>        <span class="s2">finally</span><span class="s1">:</span>
+<a name="l75"><span class="ln">75   </span></a>            <span class="s1">distutils.core.Distribution = orig</span>
+<a name="l76"><span class="ln">76   </span></a>
+<a name="l77"><span class="ln">77   </span></a>
+<a name="l78"><span class="ln">78   </span></a><span class="s1">@contextlib.contextmanager</span>
+<a name="l79"><span class="ln">79   </span></a><span class="s2">def </span><span class="s1">no_install_setup_requires():</span>
+<a name="l80"><span class="ln">80   </span></a>    <span class="s0">&quot;&quot;&quot;Temporarily disable installing setup_requires 
+<a name="l81"><span class="ln">81   </span></a> 
+<a name="l82"><span class="ln">82   </span></a>    Under PEP 517, the backend reports build dependencies to the frontend, 
+<a name="l83"><span class="ln">83   </span></a>    and the frontend is responsible for ensuring they're installed. 
+<a name="l84"><span class="ln">84   </span></a>    So setuptools (acting as a backend) should not try to install them. 
+<a name="l85"><span class="ln">85   </span></a>    &quot;&quot;&quot;</span>
+<a name="l86"><span class="ln">86   </span></a>    <span class="s1">orig = setuptools._install_setup_requires</span>
+<a name="l87"><span class="ln">87   </span></a>    <span class="s1">setuptools._install_setup_requires = </span><span class="s2">lambda </span><span class="s1">attrs: </span><span class="s2">None</span>
+<a name="l88"><span class="ln">88   </span></a>    <span class="s2">try</span><span class="s1">:</span>
+<a name="l89"><span class="ln">89   </span></a>        <span class="s2">yield</span>
+<a name="l90"><span class="ln">90   </span></a>    <span class="s2">finally</span><span class="s1">:</span>
+<a name="l91"><span class="ln">91   </span></a>        <span class="s1">setuptools._install_setup_requires = orig</span>
+<a name="l92"><span class="ln">92   </span></a>
+<a name="l93"><span class="ln">93   </span></a>
+<a name="l94"><span class="ln">94   </span></a><span class="s2">def </span><span class="s1">_get_immediate_subdirectories(a_dir):</span>
+<a name="l95"><span class="ln">95   </span></a>    <span class="s2">return </span><span class="s1">[name </span><span class="s2">for </span><span class="s1">name </span><span class="s2">in </span><span class="s1">os.listdir(a_dir)</span>
+<a name="l96"><span class="ln">96   </span></a>            <span class="s2">if </span><span class="s1">os.path.isdir(os.path.join(a_dir</span><span class="s2">, </span><span class="s1">name))]</span>
+<a name="l97"><span class="ln">97   </span></a>
+<a name="l98"><span class="ln">98   </span></a>
+<a name="l99"><span class="ln">99   </span></a><span class="s2">def </span><span class="s1">_file_with_extension(directory</span><span class="s2">, </span><span class="s1">extension):</span>
+<a name="l100"><span class="ln">100  </span></a>    <span class="s1">matching = (</span>
+<a name="l101"><span class="ln">101  </span></a>        <span class="s1">f </span><span class="s2">for </span><span class="s1">f </span><span class="s2">in </span><span class="s1">os.listdir(directory)</span>
+<a name="l102"><span class="ln">102  </span></a>        <span class="s2">if </span><span class="s1">f.endswith(extension)</span>
+<a name="l103"><span class="ln">103  </span></a>    <span class="s1">)</span>
+<a name="l104"><span class="ln">104  </span></a>    <span class="s2">try</span><span class="s1">:</span>
+<a name="l105"><span class="ln">105  </span></a>        <span class="s1">file</span><span class="s2">, </span><span class="s1">= matching</span>
+<a name="l106"><span class="ln">106  </span></a>    <span class="s2">except </span><span class="s1">ValueError:</span>
+<a name="l107"><span class="ln">107  </span></a>        <span class="s2">raise </span><span class="s1">ValueError(</span>
+<a name="l108"><span class="ln">108  </span></a>            <span class="s3">'No distribution was found. Ensure that `setup.py` '</span>
+<a name="l109"><span class="ln">109  </span></a>            <span class="s3">'is not empty and that it calls `setup()`.'</span><span class="s1">)</span>
+<a name="l110"><span class="ln">110  </span></a>    <span class="s2">return </span><span class="s1">file</span>
+<a name="l111"><span class="ln">111  </span></a>
+<a name="l112"><span class="ln">112  </span></a>
+<a name="l113"><span class="ln">113  </span></a><span class="s2">def </span><span class="s1">_open_setup_script(setup_script):</span>
+<a name="l114"><span class="ln">114  </span></a>    <span class="s2">if not </span><span class="s1">os.path.exists(setup_script):</span>
+<a name="l115"><span class="ln">115  </span></a>        <span class="s4"># Supply a default setup.py</span>
+<a name="l116"><span class="ln">116  </span></a>        <span class="s2">return </span><span class="s1">io.StringIO(</span><span class="s3">u&quot;from setuptools import setup; setup()&quot;</span><span class="s1">)</span>
+<a name="l117"><span class="ln">117  </span></a>
+<a name="l118"><span class="ln">118  </span></a>    <span class="s2">return </span><span class="s1">getattr(tokenize</span><span class="s2">, </span><span class="s3">'open'</span><span class="s2">, </span><span class="s1">open)(setup_script)</span>
+<a name="l119"><span class="ln">119  </span></a>
+<a name="l120"><span class="ln">120  </span></a>
+<a name="l121"><span class="ln">121  </span></a><span class="s2">class </span><span class="s1">_BuildMetaBackend(object):</span>
+<a name="l122"><span class="ln">122  </span></a>
+<a name="l123"><span class="ln">123  </span></a>    <span class="s2">def </span><span class="s1">_fix_config(self</span><span class="s2">, </span><span class="s1">config_settings):</span>
+<a name="l124"><span class="ln">124  </span></a>        <span class="s1">config_settings = config_settings </span><span class="s2">or </span><span class="s1">{}</span>
+<a name="l125"><span class="ln">125  </span></a>        <span class="s1">config_settings.setdefault(</span><span class="s3">'--global-option'</span><span class="s2">, </span><span class="s1">[])</span>
+<a name="l126"><span class="ln">126  </span></a>        <span class="s2">return </span><span class="s1">config_settings</span>
+<a name="l127"><span class="ln">127  </span></a>
+<a name="l128"><span class="ln">128  </span></a>    <span class="s2">def </span><span class="s1">_get_build_requires(self</span><span class="s2">, </span><span class="s1">config_settings</span><span class="s2">, </span><span class="s1">requirements):</span>
+<a name="l129"><span class="ln">129  </span></a>        <span class="s1">config_settings = self._fix_config(config_settings)</span>
+<a name="l130"><span class="ln">130  </span></a>
+<a name="l131"><span class="ln">131  </span></a>        <span class="s1">sys.argv = sys.argv[:</span><span class="s5">1</span><span class="s1">] + [</span><span class="s3">'egg_info'</span><span class="s1">] + \</span>
+<a name="l132"><span class="ln">132  </span></a>            <span class="s1">config_settings[</span><span class="s3">&quot;--global-option&quot;</span><span class="s1">]</span>
+<a name="l133"><span class="ln">133  </span></a>        <span class="s2">try</span><span class="s1">:</span>
+<a name="l134"><span class="ln">134  </span></a>            <span class="s2">with </span><span class="s1">Distribution.patch():</span>
+<a name="l135"><span class="ln">135  </span></a>                <span class="s1">self.run_setup()</span>
+<a name="l136"><span class="ln">136  </span></a>        <span class="s2">except </span><span class="s1">SetupRequirementsError </span><span class="s2">as </span><span class="s1">e:</span>
+<a name="l137"><span class="ln">137  </span></a>            <span class="s1">requirements += e.specifiers</span>
+<a name="l138"><span class="ln">138  </span></a>
+<a name="l139"><span class="ln">139  </span></a>        <span class="s2">return </span><span class="s1">requirements</span>
+<a name="l140"><span class="ln">140  </span></a>
+<a name="l141"><span class="ln">141  </span></a>    <span class="s2">def </span><span class="s1">run_setup(self</span><span class="s2">, </span><span class="s1">setup_script=</span><span class="s3">'setup.py'</span><span class="s1">):</span>
+<a name="l142"><span class="ln">142  </span></a>        <span class="s4"># Note that we can reuse our build directory between calls</span>
+<a name="l143"><span class="ln">143  </span></a>        <span class="s4"># Correctness comes first, then optimization later</span>
+<a name="l144"><span class="ln">144  </span></a>        <span class="s1">__file__ = setup_script</span>
+<a name="l145"><span class="ln">145  </span></a>        <span class="s1">__name__ = </span><span class="s3">'__main__'</span>
+<a name="l146"><span class="ln">146  </span></a>
+<a name="l147"><span class="ln">147  </span></a>        <span class="s2">with </span><span class="s1">_open_setup_script(__file__) </span><span class="s2">as </span><span class="s1">f:</span>
+<a name="l148"><span class="ln">148  </span></a>            <span class="s1">code = f.read().replace(</span><span class="s3">r'\r\n'</span><span class="s2">, </span><span class="s3">r'\n'</span><span class="s1">)</span>
+<a name="l149"><span class="ln">149  </span></a>
+<a name="l150"><span class="ln">150  </span></a>        <span class="s1">exec(compile(code</span><span class="s2">, </span><span class="s1">__file__</span><span class="s2">, </span><span class="s3">'exec'</span><span class="s1">)</span><span class="s2">, </span><span class="s1">locals())</span>
+<a name="l151"><span class="ln">151  </span></a>
+<a name="l152"><span class="ln">152  </span></a>    <span class="s2">def </span><span class="s1">get_requires_for_build_wheel(self</span><span class="s2">, </span><span class="s1">config_settings=</span><span class="s2">None</span><span class="s1">):</span>
+<a name="l153"><span class="ln">153  </span></a>        <span class="s1">config_settings = self._fix_config(config_settings)</span>
+<a name="l154"><span class="ln">154  </span></a>        <span class="s2">return </span><span class="s1">self._get_build_requires(</span>
+<a name="l155"><span class="ln">155  </span></a>            <span class="s1">config_settings</span><span class="s2">, </span><span class="s1">requirements=[</span><span class="s3">'wheel'</span><span class="s1">])</span>
+<a name="l156"><span class="ln">156  </span></a>
+<a name="l157"><span class="ln">157  </span></a>    <span class="s2">def </span><span class="s1">get_requires_for_build_sdist(self</span><span class="s2">, </span><span class="s1">config_settings=</span><span class="s2">None</span><span class="s1">):</span>
+<a name="l158"><span class="ln">158  </span></a>        <span class="s1">config_settings = self._fix_config(config_settings)</span>
+<a name="l159"><span class="ln">159  </span></a>        <span class="s2">return </span><span class="s1">self._get_build_requires(config_settings</span><span class="s2">, </span><span class="s1">requirements=[])</span>
+<a name="l160"><span class="ln">160  </span></a>
+<a name="l161"><span class="ln">161  </span></a>    <span class="s2">def </span><span class="s1">prepare_metadata_for_build_wheel(self</span><span class="s2">, </span><span class="s1">metadata_directory</span><span class="s2">,</span>
+<a name="l162"><span class="ln">162  </span></a>                                         <span class="s1">config_settings=</span><span class="s2">None</span><span class="s1">):</span>
+<a name="l163"><span class="ln">163  </span></a>        <span class="s1">sys.argv = sys.argv[:</span><span class="s5">1</span><span class="s1">] + [</span>
+<a name="l164"><span class="ln">164  </span></a>            <span class="s3">'dist_info'</span><span class="s2">, </span><span class="s3">'--egg-base'</span><span class="s2">, </span><span class="s1">metadata_directory]</span>
+<a name="l165"><span class="ln">165  </span></a>        <span class="s2">with </span><span class="s1">no_install_setup_requires():</span>
+<a name="l166"><span class="ln">166  </span></a>            <span class="s1">self.run_setup()</span>
+<a name="l167"><span class="ln">167  </span></a>
+<a name="l168"><span class="ln">168  </span></a>        <span class="s1">dist_info_directory = metadata_directory</span>
+<a name="l169"><span class="ln">169  </span></a>        <span class="s2">while True</span><span class="s1">:</span>
+<a name="l170"><span class="ln">170  </span></a>            <span class="s1">dist_infos = [f </span><span class="s2">for </span><span class="s1">f </span><span class="s2">in </span><span class="s1">os.listdir(dist_info_directory)</span>
+<a name="l171"><span class="ln">171  </span></a>                          <span class="s2">if </span><span class="s1">f.endswith(</span><span class="s3">'.dist-info'</span><span class="s1">)]</span>
+<a name="l172"><span class="ln">172  </span></a>
+<a name="l173"><span class="ln">173  </span></a>            <span class="s2">if </span><span class="s1">(</span>
+<a name="l174"><span class="ln">174  </span></a>                <span class="s1">len(dist_infos) == </span><span class="s5">0 </span><span class="s2">and</span>
+<a name="l175"><span class="ln">175  </span></a>                <span class="s1">len(_get_immediate_subdirectories(dist_info_directory)) == </span><span class="s5">1</span>
+<a name="l176"><span class="ln">176  </span></a>            <span class="s1">):</span>
+<a name="l177"><span class="ln">177  </span></a>
+<a name="l178"><span class="ln">178  </span></a>                <span class="s1">dist_info_directory = os.path.join(</span>
+<a name="l179"><span class="ln">179  </span></a>                    <span class="s1">dist_info_directory</span><span class="s2">, </span><span class="s1">os.listdir(dist_info_directory)[</span><span class="s5">0</span><span class="s1">])</span>
+<a name="l180"><span class="ln">180  </span></a>                <span class="s2">continue</span>
+<a name="l181"><span class="ln">181  </span></a>
+<a name="l182"><span class="ln">182  </span></a>            <span class="s2">assert </span><span class="s1">len(dist_infos) == </span><span class="s5">1</span>
+<a name="l183"><span class="ln">183  </span></a>            <span class="s2">break</span>
+<a name="l184"><span class="ln">184  </span></a>
+<a name="l185"><span class="ln">185  </span></a>        <span class="s4"># PEP 517 requires that the .dist-info directory be placed in the</span>
+<a name="l186"><span class="ln">186  </span></a>        <span class="s4"># metadata_directory. To comply, we MUST copy the directory to the root</span>
+<a name="l187"><span class="ln">187  </span></a>        <span class="s2">if </span><span class="s1">dist_info_directory != metadata_directory:</span>
+<a name="l188"><span class="ln">188  </span></a>            <span class="s1">shutil.move(</span>
+<a name="l189"><span class="ln">189  </span></a>                <span class="s1">os.path.join(dist_info_directory</span><span class="s2">, </span><span class="s1">dist_infos[</span><span class="s5">0</span><span class="s1">])</span><span class="s2">,</span>
+<a name="l190"><span class="ln">190  </span></a>                <span class="s1">metadata_directory)</span>
+<a name="l191"><span class="ln">191  </span></a>            <span class="s1">shutil.rmtree(dist_info_directory</span><span class="s2">, </span><span class="s1">ignore_errors=</span><span class="s2">True</span><span class="s1">)</span>
+<a name="l192"><span class="ln">192  </span></a>
+<a name="l193"><span class="ln">193  </span></a>        <span class="s2">return </span><span class="s1">dist_infos[</span><span class="s5">0</span><span class="s1">]</span>
+<a name="l194"><span class="ln">194  </span></a>
+<a name="l195"><span class="ln">195  </span></a>    <span class="s2">def </span><span class="s1">_build_with_temp_dir(self</span><span class="s2">, </span><span class="s1">setup_command</span><span class="s2">, </span><span class="s1">result_extension</span><span class="s2">,</span>
+<a name="l196"><span class="ln">196  </span></a>                             <span class="s1">result_directory</span><span class="s2">, </span><span class="s1">config_settings):</span>
+<a name="l197"><span class="ln">197  </span></a>        <span class="s1">config_settings = self._fix_config(config_settings)</span>
+<a name="l198"><span class="ln">198  </span></a>        <span class="s1">result_directory = os.path.abspath(result_directory)</span>
+<a name="l199"><span class="ln">199  </span></a>
+<a name="l200"><span class="ln">200  </span></a>        <span class="s4"># Build in a temporary directory, then copy to the target.</span>
+<a name="l201"><span class="ln">201  </span></a>        <span class="s1">os.makedirs(result_directory</span><span class="s2">, </span><span class="s1">exist_ok=</span><span class="s2">True</span><span class="s1">)</span>
+<a name="l202"><span class="ln">202  </span></a>        <span class="s2">with </span><span class="s1">tempfile.TemporaryDirectory(dir=result_directory) </span><span class="s2">as </span><span class="s1">tmp_dist_dir:</span>
+<a name="l203"><span class="ln">203  </span></a>            <span class="s1">sys.argv = (sys.argv[:</span><span class="s5">1</span><span class="s1">] + setup_command +</span>
+<a name="l204"><span class="ln">204  </span></a>                        <span class="s1">[</span><span class="s3">'--dist-dir'</span><span class="s2">, </span><span class="s1">tmp_dist_dir] +</span>
+<a name="l205"><span class="ln">205  </span></a>                        <span class="s1">config_settings[</span><span class="s3">&quot;--global-option&quot;</span><span class="s1">])</span>
+<a name="l206"><span class="ln">206  </span></a>            <span class="s2">with </span><span class="s1">no_install_setup_requires():</span>
+<a name="l207"><span class="ln">207  </span></a>                <span class="s1">self.run_setup()</span>
+<a name="l208"><span class="ln">208  </span></a>
+<a name="l209"><span class="ln">209  </span></a>            <span class="s1">result_basename = _file_with_extension(</span>
+<a name="l210"><span class="ln">210  </span></a>                <span class="s1">tmp_dist_dir</span><span class="s2">, </span><span class="s1">result_extension)</span>
+<a name="l211"><span class="ln">211  </span></a>            <span class="s1">result_path = os.path.join(result_directory</span><span class="s2">, </span><span class="s1">result_basename)</span>
+<a name="l212"><span class="ln">212  </span></a>            <span class="s2">if </span><span class="s1">os.path.exists(result_path):</span>
+<a name="l213"><span class="ln">213  </span></a>                <span class="s4"># os.rename will fail overwriting on non-Unix.</span>
+<a name="l214"><span class="ln">214  </span></a>                <span class="s1">os.remove(result_path)</span>
+<a name="l215"><span class="ln">215  </span></a>            <span class="s1">os.rename(os.path.join(tmp_dist_dir</span><span class="s2">, </span><span class="s1">result_basename)</span><span class="s2">, </span><span class="s1">result_path)</span>
+<a name="l216"><span class="ln">216  </span></a>
+<a name="l217"><span class="ln">217  </span></a>        <span class="s2">return </span><span class="s1">result_basename</span>
+<a name="l218"><span class="ln">218  </span></a>
+<a name="l219"><span class="ln">219  </span></a>    <span class="s2">def </span><span class="s1">build_wheel(self</span><span class="s2">, </span><span class="s1">wheel_directory</span><span class="s2">, </span><span class="s1">config_settings=</span><span class="s2">None,</span>
+<a name="l220"><span class="ln">220  </span></a>                    <span class="s1">metadata_directory=</span><span class="s2">None</span><span class="s1">):</span>
+<a name="l221"><span class="ln">221  </span></a>        <span class="s2">return </span><span class="s1">self._build_with_temp_dir([</span><span class="s3">'bdist_wheel'</span><span class="s1">]</span><span class="s2">, </span><span class="s3">'.whl'</span><span class="s2">,</span>
+<a name="l222"><span class="ln">222  </span></a>                                         <span class="s1">wheel_directory</span><span class="s2">, </span><span class="s1">config_settings)</span>
+<a name="l223"><span class="ln">223  </span></a>
+<a name="l224"><span class="ln">224  </span></a>    <span class="s2">def </span><span class="s1">build_sdist(self</span><span class="s2">, </span><span class="s1">sdist_directory</span><span class="s2">, </span><span class="s1">config_settings=</span><span class="s2">None</span><span class="s1">):</span>
+<a name="l225"><span class="ln">225  </span></a>        <span class="s2">return </span><span class="s1">self._build_with_temp_dir([</span><span class="s3">'sdist'</span><span class="s2">, </span><span class="s3">'--formats'</span><span class="s2">, </span><span class="s3">'gztar'</span><span class="s1">]</span><span class="s2">,</span>
+<a name="l226"><span class="ln">226  </span></a>                                         <span class="s3">'.tar.gz'</span><span class="s2">, </span><span class="s1">sdist_directory</span><span class="s2">,</span>
+<a name="l227"><span class="ln">227  </span></a>                                         <span class="s1">config_settings)</span>
+<a name="l228"><span class="ln">228  </span></a>
+<a name="l229"><span class="ln">229  </span></a>
+<a name="l230"><span class="ln">230  </span></a><span class="s2">class </span><span class="s1">_BuildMetaLegacyBackend(_BuildMetaBackend):</span>
+<a name="l231"><span class="ln">231  </span></a>    <span class="s0">&quot;&quot;&quot;Compatibility backend for setuptools 
+<a name="l232"><span class="ln">232  </span></a> 
+<a name="l233"><span class="ln">233  </span></a>    This is a version of setuptools.build_meta that endeavors 
+<a name="l234"><span class="ln">234  </span></a>    to maintain backwards 
+<a name="l235"><span class="ln">235  </span></a>    compatibility with pre-PEP 517 modes of invocation. It 
+<a name="l236"><span class="ln">236  </span></a>    exists as a temporary 
+<a name="l237"><span class="ln">237  </span></a>    bridge between the old packaging mechanism and the new 
+<a name="l238"><span class="ln">238  </span></a>    packaging mechanism, 
+<a name="l239"><span class="ln">239  </span></a>    and will eventually be removed. 
+<a name="l240"><span class="ln">240  </span></a>    &quot;&quot;&quot;</span>
+<a name="l241"><span class="ln">241  </span></a>    <span class="s2">def </span><span class="s1">run_setup(self</span><span class="s2">, </span><span class="s1">setup_script=</span><span class="s3">'setup.py'</span><span class="s1">):</span>
+<a name="l242"><span class="ln">242  </span></a>        <span class="s4"># In order to maintain compatibility with scripts assuming that</span>
+<a name="l243"><span class="ln">243  </span></a>        <span class="s4"># the setup.py script is in a directory on the PYTHONPATH, inject</span>
+<a name="l244"><span class="ln">244  </span></a>        <span class="s4"># '' into sys.path. (pypa/setuptools#1642)</span>
+<a name="l245"><span class="ln">245  </span></a>        <span class="s1">sys_path = list(sys.path)           </span><span class="s4"># Save the original path</span>
+<a name="l246"><span class="ln">246  </span></a>
+<a name="l247"><span class="ln">247  </span></a>        <span class="s1">script_dir = os.path.dirname(os.path.abspath(setup_script))</span>
+<a name="l248"><span class="ln">248  </span></a>        <span class="s2">if </span><span class="s1">script_dir </span><span class="s2">not in </span><span class="s1">sys.path:</span>
+<a name="l249"><span class="ln">249  </span></a>            <span class="s1">sys.path.insert(</span><span class="s5">0</span><span class="s2">, </span><span class="s1">script_dir)</span>
+<a name="l250"><span class="ln">250  </span></a>
+<a name="l251"><span class="ln">251  </span></a>        <span class="s4"># Some setup.py scripts (e.g. in pygame and numpy) use sys.argv[0] to</span>
+<a name="l252"><span class="ln">252  </span></a>        <span class="s4"># get the directory of the source code. They expect it to refer to the</span>
+<a name="l253"><span class="ln">253  </span></a>        <span class="s4"># setup.py script.</span>
+<a name="l254"><span class="ln">254  </span></a>        <span class="s1">sys_argv_0 = sys.argv[</span><span class="s5">0</span><span class="s1">]</span>
+<a name="l255"><span class="ln">255  </span></a>        <span class="s1">sys.argv[</span><span class="s5">0</span><span class="s1">] = setup_script</span>
+<a name="l256"><span class="ln">256  </span></a>
+<a name="l257"><span class="ln">257  </span></a>        <span class="s2">try</span><span class="s1">:</span>
+<a name="l258"><span class="ln">258  </span></a>            <span class="s1">super(_BuildMetaLegacyBackend</span><span class="s2">,</span>
+<a name="l259"><span class="ln">259  </span></a>                  <span class="s1">self).run_setup(setup_script=setup_script)</span>
+<a name="l260"><span class="ln">260  </span></a>        <span class="s2">finally</span><span class="s1">:</span>
+<a name="l261"><span class="ln">261  </span></a>            <span class="s4"># While PEP 517 frontends should be calling each hook in a fresh</span>
+<a name="l262"><span class="ln">262  </span></a>            <span class="s4"># subprocess according to the standard (and thus it should not be</span>
+<a name="l263"><span class="ln">263  </span></a>            <span class="s4"># strictly necessary to restore the old sys.path), we'll restore</span>
+<a name="l264"><span class="ln">264  </span></a>            <span class="s4"># the original path so that the path manipulation does not persist</span>
+<a name="l265"><span class="ln">265  </span></a>            <span class="s4"># within the hook after run_setup is called.</span>
+<a name="l266"><span class="ln">266  </span></a>            <span class="s1">sys.path[:] = sys_path</span>
+<a name="l267"><span class="ln">267  </span></a>            <span class="s1">sys.argv[</span><span class="s5">0</span><span class="s1">] = sys_argv_0</span>
+<a name="l268"><span class="ln">268  </span></a>
+<a name="l269"><span class="ln">269  </span></a>
+<a name="l270"><span class="ln">270  </span></a><span class="s4"># The primary backend</span>
+<a name="l271"><span class="ln">271  </span></a><span class="s1">_BACKEND = _BuildMetaBackend()</span>
+<a name="l272"><span class="ln">272  </span></a>
+<a name="l273"><span class="ln">273  </span></a><span class="s1">get_requires_for_build_wheel = _BACKEND.get_requires_for_build_wheel</span>
+<a name="l274"><span class="ln">274  </span></a><span class="s1">get_requires_for_build_sdist = _BACKEND.get_requires_for_build_sdist</span>
+<a name="l275"><span class="ln">275  </span></a><span class="s1">prepare_metadata_for_build_wheel = _BACKEND.prepare_metadata_for_build_wheel</span>
+<a name="l276"><span class="ln">276  </span></a><span class="s1">build_wheel = _BACKEND.build_wheel</span>
+<a name="l277"><span class="ln">277  </span></a><span class="s1">build_sdist = _BACKEND.build_sdist</span>
+<a name="l278"><span class="ln">278  </span></a>
+<a name="l279"><span class="ln">279  </span></a>
+<a name="l280"><span class="ln">280  </span></a><span class="s4"># The legacy backend</span>
+<a name="l281"><span class="ln">281  </span></a><span class="s1">__legacy__ = _BuildMetaLegacyBackend()</span>
+<a name="l282"><span class="ln">282  </span></a></pre>
+</body>
+</html>

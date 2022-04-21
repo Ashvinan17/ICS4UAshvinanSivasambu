@@ -1,0 +1,106 @@
+<html>
+<head>
+<title>chardetect.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #629755; font-style: italic;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #cc7832;}
+.s3 { color: #6a8759;}
+.s4 { color: #808080;}
+.ln { color: #606366; font-weight: normal; font-style: normal; }
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+chardetect.py</font>
+</center></td></tr></table>
+<pre><a name="l1"><span class="ln">1    </span></a><span class="s0">&quot;&quot;&quot; 
+<a name="l2"><span class="ln">2    </span></a>Script which takes one or more file paths and reports on their detected 
+<a name="l3"><span class="ln">3    </span></a>encodings 
+<a name="l4"><span class="ln">4    </span></a> 
+<a name="l5"><span class="ln">5    </span></a>Example:: 
+<a name="l6"><span class="ln">6    </span></a> 
+<a name="l7"><span class="ln">7    </span></a>    % chardetect somefile someotherfile 
+<a name="l8"><span class="ln">8    </span></a>    somefile: windows-1252 with confidence 0.5 
+<a name="l9"><span class="ln">9    </span></a>    someotherfile: ascii with confidence 1.0 
+<a name="l10"><span class="ln">10   </span></a> 
+<a name="l11"><span class="ln">11   </span></a>If no paths are provided, it takes its input from stdin. 
+<a name="l12"><span class="ln">12   </span></a> 
+<a name="l13"><span class="ln">13   </span></a>&quot;&quot;&quot;</span>
+<a name="l14"><span class="ln">14   </span></a>
+<a name="l15"><span class="ln">15   </span></a><span class="s2">from </span><span class="s1">__future__ </span><span class="s2">import </span><span class="s1">absolute_import</span><span class="s2">, </span><span class="s1">print_function</span><span class="s2">, </span><span class="s1">unicode_literals</span>
+<a name="l16"><span class="ln">16   </span></a>
+<a name="l17"><span class="ln">17   </span></a><span class="s2">import </span><span class="s1">argparse</span>
+<a name="l18"><span class="ln">18   </span></a><span class="s2">import </span><span class="s1">sys</span>
+<a name="l19"><span class="ln">19   </span></a>
+<a name="l20"><span class="ln">20   </span></a><span class="s2">from </span><span class="s1">pip._vendor.chardet </span><span class="s2">import </span><span class="s1">__version__</span>
+<a name="l21"><span class="ln">21   </span></a><span class="s2">from </span><span class="s1">pip._vendor.chardet.compat </span><span class="s2">import </span><span class="s1">PY2</span>
+<a name="l22"><span class="ln">22   </span></a><span class="s2">from </span><span class="s1">pip._vendor.chardet.universaldetector </span><span class="s2">import </span><span class="s1">UniversalDetector</span>
+<a name="l23"><span class="ln">23   </span></a>
+<a name="l24"><span class="ln">24   </span></a>
+<a name="l25"><span class="ln">25   </span></a><span class="s2">def </span><span class="s1">description_of(lines</span><span class="s2">, </span><span class="s1">name=</span><span class="s3">'stdin'</span><span class="s1">):</span>
+<a name="l26"><span class="ln">26   </span></a>    <span class="s0">&quot;&quot;&quot; 
+<a name="l27"><span class="ln">27   </span></a>    Return a string describing the probable encoding of a file or 
+<a name="l28"><span class="ln">28   </span></a>    list of strings. 
+<a name="l29"><span class="ln">29   </span></a> 
+<a name="l30"><span class="ln">30   </span></a>    :param lines: The lines to get the encoding of. 
+<a name="l31"><span class="ln">31   </span></a>    :type lines: Iterable of bytes 
+<a name="l32"><span class="ln">32   </span></a>    :param name: Name of file or collection of lines 
+<a name="l33"><span class="ln">33   </span></a>    :type name: str 
+<a name="l34"><span class="ln">34   </span></a>    &quot;&quot;&quot;</span>
+<a name="l35"><span class="ln">35   </span></a>    <span class="s1">u = UniversalDetector()</span>
+<a name="l36"><span class="ln">36   </span></a>    <span class="s2">for </span><span class="s1">line </span><span class="s2">in </span><span class="s1">lines:</span>
+<a name="l37"><span class="ln">37   </span></a>        <span class="s1">line = bytearray(line)</span>
+<a name="l38"><span class="ln">38   </span></a>        <span class="s1">u.feed(line)</span>
+<a name="l39"><span class="ln">39   </span></a>        <span class="s4"># shortcut out of the loop to save reading further - particularly useful if we read a BOM.</span>
+<a name="l40"><span class="ln">40   </span></a>        <span class="s2">if </span><span class="s1">u.done:</span>
+<a name="l41"><span class="ln">41   </span></a>            <span class="s2">break</span>
+<a name="l42"><span class="ln">42   </span></a>    <span class="s1">u.close()</span>
+<a name="l43"><span class="ln">43   </span></a>    <span class="s1">result = u.result</span>
+<a name="l44"><span class="ln">44   </span></a>    <span class="s2">if </span><span class="s1">PY2:</span>
+<a name="l45"><span class="ln">45   </span></a>        <span class="s1">name = name.decode(sys.getfilesystemencoding()</span><span class="s2">, </span><span class="s3">'ignore'</span><span class="s1">)</span>
+<a name="l46"><span class="ln">46   </span></a>    <span class="s2">if </span><span class="s1">result[</span><span class="s3">'encoding'</span><span class="s1">]:</span>
+<a name="l47"><span class="ln">47   </span></a>        <span class="s2">return </span><span class="s3">'{}: {} with confidence {}'</span><span class="s1">.format(name</span><span class="s2">, </span><span class="s1">result[</span><span class="s3">'encoding'</span><span class="s1">]</span><span class="s2">,</span>
+<a name="l48"><span class="ln">48   </span></a>                                                     <span class="s1">result[</span><span class="s3">'confidence'</span><span class="s1">])</span>
+<a name="l49"><span class="ln">49   </span></a>    <span class="s2">else</span><span class="s1">:</span>
+<a name="l50"><span class="ln">50   </span></a>        <span class="s2">return </span><span class="s3">'{}: no result'</span><span class="s1">.format(name)</span>
+<a name="l51"><span class="ln">51   </span></a>
+<a name="l52"><span class="ln">52   </span></a>
+<a name="l53"><span class="ln">53   </span></a><span class="s2">def </span><span class="s1">main(argv=</span><span class="s2">None</span><span class="s1">):</span>
+<a name="l54"><span class="ln">54   </span></a>    <span class="s0">&quot;&quot;&quot; 
+<a name="l55"><span class="ln">55   </span></a>    Handles command line arguments and gets things started. 
+<a name="l56"><span class="ln">56   </span></a> 
+<a name="l57"><span class="ln">57   </span></a>    :param argv: List of arguments, as if specified on the command-line. 
+<a name="l58"><span class="ln">58   </span></a>                 If None, ``sys.argv[1:]`` is used instead. 
+<a name="l59"><span class="ln">59   </span></a>    :type argv: list of str 
+<a name="l60"><span class="ln">60   </span></a>    &quot;&quot;&quot;</span>
+<a name="l61"><span class="ln">61   </span></a>    <span class="s4"># Get command line arguments</span>
+<a name="l62"><span class="ln">62   </span></a>    <span class="s1">parser = argparse.ArgumentParser(</span>
+<a name="l63"><span class="ln">63   </span></a>        <span class="s1">description=</span><span class="s3">&quot;Takes one or more file paths and reports their detected </span><span class="s2">\ 
+<a name="l64"><span class="ln">64   </span></a>                     </span><span class="s3">encodings&quot;</span><span class="s1">)</span>
+<a name="l65"><span class="ln">65   </span></a>    <span class="s1">parser.add_argument(</span><span class="s3">'input'</span><span class="s2">,</span>
+<a name="l66"><span class="ln">66   </span></a>                        <span class="s1">help=</span><span class="s3">'File whose encoding we would like to determine. </span><span class="s2">\ 
+<a name="l67"><span class="ln">67   </span></a>                              </span><span class="s3">(default: stdin)'</span><span class="s2">,</span>
+<a name="l68"><span class="ln">68   </span></a>                        <span class="s1">type=argparse.FileType(</span><span class="s3">'rb'</span><span class="s1">)</span><span class="s2">, </span><span class="s1">nargs=</span><span class="s3">'*'</span><span class="s2">,</span>
+<a name="l69"><span class="ln">69   </span></a>                        <span class="s1">default=[sys.stdin </span><span class="s2">if </span><span class="s1">PY2 </span><span class="s2">else </span><span class="s1">sys.stdin.buffer])</span>
+<a name="l70"><span class="ln">70   </span></a>    <span class="s1">parser.add_argument(</span><span class="s3">'--version'</span><span class="s2">, </span><span class="s1">action=</span><span class="s3">'version'</span><span class="s2">,</span>
+<a name="l71"><span class="ln">71   </span></a>                        <span class="s1">version=</span><span class="s3">'%(prog)s {}'</span><span class="s1">.format(__version__))</span>
+<a name="l72"><span class="ln">72   </span></a>    <span class="s1">args = parser.parse_args(argv)</span>
+<a name="l73"><span class="ln">73   </span></a>
+<a name="l74"><span class="ln">74   </span></a>    <span class="s2">for </span><span class="s1">f </span><span class="s2">in </span><span class="s1">args.input:</span>
+<a name="l75"><span class="ln">75   </span></a>        <span class="s2">if </span><span class="s1">f.isatty():</span>
+<a name="l76"><span class="ln">76   </span></a>            <span class="s1">print(</span><span class="s3">&quot;You are running chardetect interactively. Press &quot; </span><span class="s1">+</span>
+<a name="l77"><span class="ln">77   </span></a>                  <span class="s3">&quot;CTRL-D twice at the start of a blank line to signal the &quot; </span><span class="s1">+</span>
+<a name="l78"><span class="ln">78   </span></a>                  <span class="s3">&quot;end of your input. If you want help, run chardetect &quot; </span><span class="s1">+</span>
+<a name="l79"><span class="ln">79   </span></a>                  <span class="s3">&quot;--help</span><span class="s2">\n</span><span class="s3">&quot;</span><span class="s2">, </span><span class="s1">file=sys.stderr)</span>
+<a name="l80"><span class="ln">80   </span></a>        <span class="s1">print(description_of(f</span><span class="s2">, </span><span class="s1">f.name))</span>
+<a name="l81"><span class="ln">81   </span></a>
+<a name="l82"><span class="ln">82   </span></a>
+<a name="l83"><span class="ln">83   </span></a><span class="s2">if </span><span class="s1">__name__ == </span><span class="s3">'__main__'</span><span class="s1">:</span>
+<a name="l84"><span class="ln">84   </span></a>    <span class="s1">main()</span>
+<a name="l85"><span class="ln">85   </span></a></pre>
+</body>
+</html>

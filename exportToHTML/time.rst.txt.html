@@ -1,0 +1,183 @@
+<html>
+<head>
+<title>time.rst.txt</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #a9b7c6;}
+.ln { color: #606366; font-weight: normal; font-style: normal; }
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+time.rst.txt</font>
+</center></td></tr></table>
+<pre><a name="l1"><span class="ln">1    </span></a><span class="s0">.. include:: common.txt</span>
+<a name="l2"><span class="ln">2    </span></a>
+<a name="l3"><span class="ln">3    </span></a><span class="s0">:mod:`pygame.time`</span>
+<a name="l4"><span class="ln">4    </span></a><span class="s0">==================</span>
+<a name="l5"><span class="ln">5    </span></a>
+<a name="l6"><span class="ln">6    </span></a><span class="s0">.. module:: pygame.time</span>
+<a name="l7"><span class="ln">7    </span></a>   <span class="s0">:synopsis: pygame module for monitoring time</span>
+<a name="l8"><span class="ln">8    </span></a>
+<a name="l9"><span class="ln">9    </span></a><span class="s0">| :sl:`pygame module for monitoring time`</span>
+<a name="l10"><span class="ln">10   </span></a>
+<a name="l11"><span class="ln">11   </span></a><span class="s0">Times in pygame are represented in milliseconds (1/1000 seconds). Most</span>
+<a name="l12"><span class="ln">12   </span></a><span class="s0">platforms have a limited time resolution of around 10 milliseconds. This</span>
+<a name="l13"><span class="ln">13   </span></a><span class="s0">resolution, in milliseconds, is given in the ``TIMER_RESOLUTION`` constant.</span>
+<a name="l14"><span class="ln">14   </span></a>
+<a name="l15"><span class="ln">15   </span></a><span class="s0">.. function:: get_ticks</span>
+<a name="l16"><span class="ln">16   </span></a>
+<a name="l17"><span class="ln">17   </span></a>   <span class="s0">| :sl:`get the time in milliseconds`</span>
+<a name="l18"><span class="ln">18   </span></a>   <span class="s0">| :sg:`get_ticks() -&gt; milliseconds`</span>
+<a name="l19"><span class="ln">19   </span></a>
+<a name="l20"><span class="ln">20   </span></a>   <span class="s0">Return the number of milliseconds since ``pygame.init()`` was called. Before</span>
+<a name="l21"><span class="ln">21   </span></a>   <span class="s0">pygame is initialized this will always be 0.</span>
+<a name="l22"><span class="ln">22   </span></a>
+<a name="l23"><span class="ln">23   </span></a>   <span class="s0">.. ## pygame.time.get_ticks ##</span>
+<a name="l24"><span class="ln">24   </span></a>
+<a name="l25"><span class="ln">25   </span></a><span class="s0">.. function:: wait</span>
+<a name="l26"><span class="ln">26   </span></a>
+<a name="l27"><span class="ln">27   </span></a>   <span class="s0">| :sl:`pause the program for an amount of time`</span>
+<a name="l28"><span class="ln">28   </span></a>   <span class="s0">| :sg:`wait(milliseconds) -&gt; time`</span>
+<a name="l29"><span class="ln">29   </span></a>
+<a name="l30"><span class="ln">30   </span></a>   <span class="s0">Will pause for a given number of milliseconds. This function sleeps the</span>
+<a name="l31"><span class="ln">31   </span></a>   <span class="s0">process to share the processor with other programs. A program that waits for</span>
+<a name="l32"><span class="ln">32   </span></a>   <span class="s0">even a few milliseconds will consume very little processor time. It is</span>
+<a name="l33"><span class="ln">33   </span></a>   <span class="s0">slightly less accurate than the ``pygame.time.delay()`` function.</span>
+<a name="l34"><span class="ln">34   </span></a>
+<a name="l35"><span class="ln">35   </span></a>   <span class="s0">This returns the actual number of milliseconds used.</span>
+<a name="l36"><span class="ln">36   </span></a>
+<a name="l37"><span class="ln">37   </span></a>   <span class="s0">.. ## pygame.time.wait ##</span>
+<a name="l38"><span class="ln">38   </span></a>
+<a name="l39"><span class="ln">39   </span></a><span class="s0">.. function:: delay</span>
+<a name="l40"><span class="ln">40   </span></a>
+<a name="l41"><span class="ln">41   </span></a>   <span class="s0">| :sl:`pause the program for an amount of time`</span>
+<a name="l42"><span class="ln">42   </span></a>   <span class="s0">| :sg:`delay(milliseconds) -&gt; time`</span>
+<a name="l43"><span class="ln">43   </span></a>
+<a name="l44"><span class="ln">44   </span></a>   <span class="s0">Will pause for a given number of milliseconds. This function will use the</span>
+<a name="l45"><span class="ln">45   </span></a>   <span class="s0">processor (rather than sleeping) in order to make the delay more accurate</span>
+<a name="l46"><span class="ln">46   </span></a>   <span class="s0">than ``pygame.time.wait()``.</span>
+<a name="l47"><span class="ln">47   </span></a>
+<a name="l48"><span class="ln">48   </span></a>   <span class="s0">This returns the actual number of milliseconds used.</span>
+<a name="l49"><span class="ln">49   </span></a>
+<a name="l50"><span class="ln">50   </span></a>   <span class="s0">.. ## pygame.time.delay ##</span>
+<a name="l51"><span class="ln">51   </span></a>
+<a name="l52"><span class="ln">52   </span></a><span class="s0">.. function:: set_timer</span>
+<a name="l53"><span class="ln">53   </span></a>
+<a name="l54"><span class="ln">54   </span></a>   <span class="s0">| :sl:`repeatedly create an event on the event queue`</span>
+<a name="l55"><span class="ln">55   </span></a>   <span class="s0">| :sg:`set_timer(event, millis) -&gt; None`</span>
+<a name="l56"><span class="ln">56   </span></a>   <span class="s0">| :sg:`set_timer(event, millis, loops=0) -&gt; None`</span>
+<a name="l57"><span class="ln">57   </span></a>
+<a name="l58"><span class="ln">58   </span></a>   <span class="s0">Set an event to appear on the event queue every given number of milliseconds.</span>
+<a name="l59"><span class="ln">59   </span></a>   <span class="s0">The first event will not appear until the amount of time has passed.</span>
+<a name="l60"><span class="ln">60   </span></a>
+<a name="l61"><span class="ln">61   </span></a>   <span class="s0">The ``event`` attribute can be a ``pygame.event.Event`` object or an integer</span>
+<a name="l62"><span class="ln">62   </span></a>   <span class="s0">type that denotes an event.</span>
+<a name="l63"><span class="ln">63   </span></a>
+<a name="l64"><span class="ln">64   </span></a>   <span class="s0">``loops`` is an integer that denotes the number of events posted. If 0 (default)</span>
+<a name="l65"><span class="ln">65   </span></a>   <span class="s0">then the events will keep getting posted, unless explicitly stopped.</span>
+<a name="l66"><span class="ln">66   </span></a>
+<a name="l67"><span class="ln">67   </span></a>   <span class="s0">To disable the timer for such an event, call the function again with the same</span>
+<a name="l68"><span class="ln">68   </span></a>   <span class="s0">event argument with ``millis`` argument set to 0.</span>
+<a name="l69"><span class="ln">69   </span></a>
+<a name="l70"><span class="ln">70   </span></a>   <span class="s0">It is also worth mentioning that a particular event type can only be put on a</span>
+<a name="l71"><span class="ln">71   </span></a>   <span class="s0">timer once. In other words, there cannot be two timers for the same event type.</span>
+<a name="l72"><span class="ln">72   </span></a>   <span class="s0">Setting an event timer for a particular event discards the old one for that</span>
+<a name="l73"><span class="ln">73   </span></a>   <span class="s0">event type.</span>
+<a name="l74"><span class="ln">74   </span></a>
+<a name="l75"><span class="ln">75   </span></a>   <span class="s0">``loops`` replaces the ``once`` argument, and this does not break backward</span>
+<a name="l76"><span class="ln">76   </span></a>   <span class="s0">compatability</span>
+<a name="l77"><span class="ln">77   </span></a>
+<a name="l78"><span class="ln">78   </span></a>   <span class="s0">.. versionadded:: 2.0.0.dev3 once argument added.</span>
+<a name="l79"><span class="ln">79   </span></a>   <span class="s0">.. versionchanged:: 2.0.1 event argument supports ``pygame.event.Event`` object</span>
+<a name="l80"><span class="ln">80   </span></a>   <span class="s0">.. versionadded:: 2.0.1 added loops argument to replace once argument</span>
+<a name="l81"><span class="ln">81   </span></a>
+<a name="l82"><span class="ln">82   </span></a>   <span class="s0">.. ## pygame.time.set_timer ##</span>
+<a name="l83"><span class="ln">83   </span></a>
+<a name="l84"><span class="ln">84   </span></a><span class="s0">.. class:: Clock</span>
+<a name="l85"><span class="ln">85   </span></a>
+<a name="l86"><span class="ln">86   </span></a>   <span class="s0">| :sl:`create an object to help track time`</span>
+<a name="l87"><span class="ln">87   </span></a>   <span class="s0">| :sg:`Clock() -&gt; Clock`</span>
+<a name="l88"><span class="ln">88   </span></a>
+<a name="l89"><span class="ln">89   </span></a>   <span class="s0">Creates a new Clock object that can be used to track an amount of time. The</span>
+<a name="l90"><span class="ln">90   </span></a>   <span class="s0">clock also provides several functions to help control a game's framerate.</span>
+<a name="l91"><span class="ln">91   </span></a>
+<a name="l92"><span class="ln">92   </span></a>   <span class="s0">.. method:: tick</span>
+<a name="l93"><span class="ln">93   </span></a>
+<a name="l94"><span class="ln">94   </span></a>      <span class="s0">| :sl:`update the clock`</span>
+<a name="l95"><span class="ln">95   </span></a>      <span class="s0">| :sg:`tick(framerate=0) -&gt; milliseconds`</span>
+<a name="l96"><span class="ln">96   </span></a>
+<a name="l97"><span class="ln">97   </span></a>      <span class="s0">This method should be called once per frame. It will compute how many</span>
+<a name="l98"><span class="ln">98   </span></a>      <span class="s0">milliseconds have passed since the previous call.</span>
+<a name="l99"><span class="ln">99   </span></a>
+<a name="l100"><span class="ln">100  </span></a>      <span class="s0">If you pass the optional framerate argument the function will delay to</span>
+<a name="l101"><span class="ln">101  </span></a>      <span class="s0">keep the game running slower than the given ticks per second. This can be</span>
+<a name="l102"><span class="ln">102  </span></a>      <span class="s0">used to help limit the runtime speed of a game. By calling</span>
+<a name="l103"><span class="ln">103  </span></a>      <span class="s0">``Clock.tick(40)`` once per frame, the program will never run at more</span>
+<a name="l104"><span class="ln">104  </span></a>      <span class="s0">than 40 frames per second.</span>
+<a name="l105"><span class="ln">105  </span></a>
+<a name="l106"><span class="ln">106  </span></a>      <span class="s0">Note that this function uses SDL_Delay function which is not accurate on</span>
+<a name="l107"><span class="ln">107  </span></a>      <span class="s0">every platform, but does not use much CPU. Use tick_busy_loop if you want</span>
+<a name="l108"><span class="ln">108  </span></a>      <span class="s0">an accurate timer, and don't mind chewing CPU.</span>
+<a name="l109"><span class="ln">109  </span></a>
+<a name="l110"><span class="ln">110  </span></a>      <span class="s0">.. ## Clock.tick ##</span>
+<a name="l111"><span class="ln">111  </span></a>
+<a name="l112"><span class="ln">112  </span></a>   <span class="s0">.. method:: tick_busy_loop</span>
+<a name="l113"><span class="ln">113  </span></a>
+<a name="l114"><span class="ln">114  </span></a>      <span class="s0">| :sl:`update the clock`</span>
+<a name="l115"><span class="ln">115  </span></a>      <span class="s0">| :sg:`tick_busy_loop(framerate=0) -&gt; milliseconds`</span>
+<a name="l116"><span class="ln">116  </span></a>
+<a name="l117"><span class="ln">117  </span></a>      <span class="s0">This method should be called once per frame. It will compute how many</span>
+<a name="l118"><span class="ln">118  </span></a>      <span class="s0">milliseconds have passed since the previous call.</span>
+<a name="l119"><span class="ln">119  </span></a>
+<a name="l120"><span class="ln">120  </span></a>      <span class="s0">If you pass the optional framerate argument the function will delay to</span>
+<a name="l121"><span class="ln">121  </span></a>      <span class="s0">keep the game running slower than the given ticks per second. This can be</span>
+<a name="l122"><span class="ln">122  </span></a>      <span class="s0">used to help limit the runtime speed of a game. By calling</span>
+<a name="l123"><span class="ln">123  </span></a>      <span class="s0">``Clock.tick_busy_loop(40)`` once per frame, the program will never run at</span>
+<a name="l124"><span class="ln">124  </span></a>      <span class="s0">more than 40 frames per second.</span>
+<a name="l125"><span class="ln">125  </span></a>
+<a name="l126"><span class="ln">126  </span></a>      <span class="s0">Note that this function uses :func:`pygame.time.delay`, which uses lots</span>
+<a name="l127"><span class="ln">127  </span></a>      <span class="s0">of CPU in a busy loop to make sure that timing is more accurate.</span>
+<a name="l128"><span class="ln">128  </span></a>
+<a name="l129"><span class="ln">129  </span></a>      <span class="s0">.. versionadded:: 1.8</span>
+<a name="l130"><span class="ln">130  </span></a>
+<a name="l131"><span class="ln">131  </span></a>      <span class="s0">.. ## Clock.tick_busy_loop ##</span>
+<a name="l132"><span class="ln">132  </span></a>
+<a name="l133"><span class="ln">133  </span></a>   <span class="s0">.. method:: get_time</span>
+<a name="l134"><span class="ln">134  </span></a>
+<a name="l135"><span class="ln">135  </span></a>      <span class="s0">| :sl:`time used in the previous tick`</span>
+<a name="l136"><span class="ln">136  </span></a>      <span class="s0">| :sg:`get_time() -&gt; milliseconds`</span>
+<a name="l137"><span class="ln">137  </span></a>
+<a name="l138"><span class="ln">138  </span></a>      <span class="s0">The number of milliseconds that passed between the previous two calls to</span>
+<a name="l139"><span class="ln">139  </span></a>      <span class="s0">``Clock.tick()``.</span>
+<a name="l140"><span class="ln">140  </span></a>
+<a name="l141"><span class="ln">141  </span></a>      <span class="s0">.. ## Clock.get_time ##</span>
+<a name="l142"><span class="ln">142  </span></a>
+<a name="l143"><span class="ln">143  </span></a>   <span class="s0">.. method:: get_rawtime</span>
+<a name="l144"><span class="ln">144  </span></a>
+<a name="l145"><span class="ln">145  </span></a>      <span class="s0">| :sl:`actual time used in the previous tick`</span>
+<a name="l146"><span class="ln">146  </span></a>      <span class="s0">| :sg:`get_rawtime() -&gt; milliseconds`</span>
+<a name="l147"><span class="ln">147  </span></a>
+<a name="l148"><span class="ln">148  </span></a>      <span class="s0">Similar to ``Clock.get_time()``, but does not include any time used</span>
+<a name="l149"><span class="ln">149  </span></a>      <span class="s0">while ``Clock.tick()`` was delaying to limit the framerate.</span>
+<a name="l150"><span class="ln">150  </span></a>
+<a name="l151"><span class="ln">151  </span></a>      <span class="s0">.. ## Clock.get_rawtime ##</span>
+<a name="l152"><span class="ln">152  </span></a>
+<a name="l153"><span class="ln">153  </span></a>   <span class="s0">.. method:: get_fps</span>
+<a name="l154"><span class="ln">154  </span></a>
+<a name="l155"><span class="ln">155  </span></a>      <span class="s0">| :sl:`compute the clock framerate`</span>
+<a name="l156"><span class="ln">156  </span></a>      <span class="s0">| :sg:`get_fps() -&gt; float`</span>
+<a name="l157"><span class="ln">157  </span></a>
+<a name="l158"><span class="ln">158  </span></a>      <span class="s0">Compute your game's framerate (in frames per second). It is computed by</span>
+<a name="l159"><span class="ln">159  </span></a>      <span class="s0">averaging the last ten calls to ``Clock.tick()``.</span>
+<a name="l160"><span class="ln">160  </span></a>
+<a name="l161"><span class="ln">161  </span></a>      <span class="s0">.. ## Clock.get_fps ##</span>
+<a name="l162"><span class="ln">162  </span></a>
+<a name="l163"><span class="ln">163  </span></a>   <span class="s0">.. ## pygame.time.Clock ##</span>
+<a name="l164"><span class="ln">164  </span></a>
+<a name="l165"><span class="ln">165  </span></a><span class="s0">.. ## pygame.time ##</span>
+<a name="l166"><span class="ln">166  </span></a></pre>
+</body>
+</html>

@@ -1,0 +1,156 @@
+<html>
+<head>
+<title>py36compat.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cc7832;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #629755; font-style: italic;}
+.s3 { color: #808080;}
+.s4 { color: #6a8759;}
+.ln { color: #606366; font-weight: normal; font-style: normal; }
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+py36compat.py</font>
+</center></td></tr></table>
+<pre><a name="l1"><span class="ln">1    </span></a><span class="s0">import </span><span class="s1">os</span>
+<a name="l2"><span class="ln">2    </span></a><span class="s0">from </span><span class="s1">glob </span><span class="s0">import </span><span class="s1">glob</span>
+<a name="l3"><span class="ln">3    </span></a><span class="s0">from </span><span class="s1">distutils.util </span><span class="s0">import </span><span class="s1">convert_path</span>
+<a name="l4"><span class="ln">4    </span></a><span class="s0">from </span><span class="s1">distutils.command </span><span class="s0">import </span><span class="s1">sdist</span>
+<a name="l5"><span class="ln">5    </span></a>
+<a name="l6"><span class="ln">6    </span></a>
+<a name="l7"><span class="ln">7    </span></a><span class="s0">class </span><span class="s1">sdist_add_defaults:</span>
+<a name="l8"><span class="ln">8    </span></a>    <span class="s2">&quot;&quot;&quot; 
+<a name="l9"><span class="ln">9    </span></a>    Mix-in providing forward-compatibility for functionality as found in 
+<a name="l10"><span class="ln">10   </span></a>    distutils on Python 3.7. 
+<a name="l11"><span class="ln">11   </span></a> 
+<a name="l12"><span class="ln">12   </span></a>    Do not edit the code in this class except to update functionality 
+<a name="l13"><span class="ln">13   </span></a>    as implemented in distutils. Instead, override in the subclass. 
+<a name="l14"><span class="ln">14   </span></a>    &quot;&quot;&quot;</span>
+<a name="l15"><span class="ln">15   </span></a>
+<a name="l16"><span class="ln">16   </span></a>    <span class="s0">def </span><span class="s1">add_defaults(self):</span>
+<a name="l17"><span class="ln">17   </span></a>        <span class="s2">&quot;&quot;&quot;Add all the default files to self.filelist: 
+<a name="l18"><span class="ln">18   </span></a>          - README or README.txt 
+<a name="l19"><span class="ln">19   </span></a>          - setup.py 
+<a name="l20"><span class="ln">20   </span></a>          - test/test*.py 
+<a name="l21"><span class="ln">21   </span></a>          - all pure Python modules mentioned in setup script 
+<a name="l22"><span class="ln">22   </span></a>          - all files pointed by package_data (build_py) 
+<a name="l23"><span class="ln">23   </span></a>          - all files defined in data_files. 
+<a name="l24"><span class="ln">24   </span></a>          - all files defined as scripts. 
+<a name="l25"><span class="ln">25   </span></a>          - all C sources listed as part of extensions or C libraries 
+<a name="l26"><span class="ln">26   </span></a>            in the setup script (doesn't catch C headers!) 
+<a name="l27"><span class="ln">27   </span></a>        Warns if (README or README.txt) or setup.py are missing; everything 
+<a name="l28"><span class="ln">28   </span></a>        else is optional. 
+<a name="l29"><span class="ln">29   </span></a>        &quot;&quot;&quot;</span>
+<a name="l30"><span class="ln">30   </span></a>        <span class="s1">self._add_defaults_standards()</span>
+<a name="l31"><span class="ln">31   </span></a>        <span class="s1">self._add_defaults_optional()</span>
+<a name="l32"><span class="ln">32   </span></a>        <span class="s1">self._add_defaults_python()</span>
+<a name="l33"><span class="ln">33   </span></a>        <span class="s1">self._add_defaults_data_files()</span>
+<a name="l34"><span class="ln">34   </span></a>        <span class="s1">self._add_defaults_ext()</span>
+<a name="l35"><span class="ln">35   </span></a>        <span class="s1">self._add_defaults_c_libs()</span>
+<a name="l36"><span class="ln">36   </span></a>        <span class="s1">self._add_defaults_scripts()</span>
+<a name="l37"><span class="ln">37   </span></a>
+<a name="l38"><span class="ln">38   </span></a>    <span class="s1">@staticmethod</span>
+<a name="l39"><span class="ln">39   </span></a>    <span class="s0">def </span><span class="s1">_cs_path_exists(fspath):</span>
+<a name="l40"><span class="ln">40   </span></a>        <span class="s2">&quot;&quot;&quot; 
+<a name="l41"><span class="ln">41   </span></a>        Case-sensitive path existence check 
+<a name="l42"><span class="ln">42   </span></a> 
+<a name="l43"><span class="ln">43   </span></a>        &gt;&gt;&gt; sdist_add_defaults._cs_path_exists(__file__) 
+<a name="l44"><span class="ln">44   </span></a>        True 
+<a name="l45"><span class="ln">45   </span></a>        &gt;&gt;&gt; sdist_add_defaults._cs_path_exists(__file__.upper()) 
+<a name="l46"><span class="ln">46   </span></a>        False 
+<a name="l47"><span class="ln">47   </span></a>        &quot;&quot;&quot;</span>
+<a name="l48"><span class="ln">48   </span></a>        <span class="s0">if not </span><span class="s1">os.path.exists(fspath):</span>
+<a name="l49"><span class="ln">49   </span></a>            <span class="s0">return False</span>
+<a name="l50"><span class="ln">50   </span></a>        <span class="s3"># make absolute so we always have a directory</span>
+<a name="l51"><span class="ln">51   </span></a>        <span class="s1">abspath = os.path.abspath(fspath)</span>
+<a name="l52"><span class="ln">52   </span></a>        <span class="s1">directory</span><span class="s0">, </span><span class="s1">filename = os.path.split(abspath)</span>
+<a name="l53"><span class="ln">53   </span></a>        <span class="s0">return </span><span class="s1">filename </span><span class="s0">in </span><span class="s1">os.listdir(directory)</span>
+<a name="l54"><span class="ln">54   </span></a>
+<a name="l55"><span class="ln">55   </span></a>    <span class="s0">def </span><span class="s1">_add_defaults_standards(self):</span>
+<a name="l56"><span class="ln">56   </span></a>        <span class="s1">standards = [self.READMES</span><span class="s0">, </span><span class="s1">self.distribution.script_name]</span>
+<a name="l57"><span class="ln">57   </span></a>        <span class="s0">for </span><span class="s1">fn </span><span class="s0">in </span><span class="s1">standards:</span>
+<a name="l58"><span class="ln">58   </span></a>            <span class="s0">if </span><span class="s1">isinstance(fn</span><span class="s0">, </span><span class="s1">tuple):</span>
+<a name="l59"><span class="ln">59   </span></a>                <span class="s1">alts = fn</span>
+<a name="l60"><span class="ln">60   </span></a>                <span class="s1">got_it = </span><span class="s0">False</span>
+<a name="l61"><span class="ln">61   </span></a>                <span class="s0">for </span><span class="s1">fn </span><span class="s0">in </span><span class="s1">alts:</span>
+<a name="l62"><span class="ln">62   </span></a>                    <span class="s0">if </span><span class="s1">self._cs_path_exists(fn):</span>
+<a name="l63"><span class="ln">63   </span></a>                        <span class="s1">got_it = </span><span class="s0">True</span>
+<a name="l64"><span class="ln">64   </span></a>                        <span class="s1">self.filelist.append(fn)</span>
+<a name="l65"><span class="ln">65   </span></a>                        <span class="s0">break</span>
+<a name="l66"><span class="ln">66   </span></a>
+<a name="l67"><span class="ln">67   </span></a>                <span class="s0">if not </span><span class="s1">got_it:</span>
+<a name="l68"><span class="ln">68   </span></a>                    <span class="s1">self.warn(</span><span class="s4">&quot;standard file not found: should have one of &quot; </span><span class="s1">+</span>
+<a name="l69"><span class="ln">69   </span></a>                              <span class="s4">', '</span><span class="s1">.join(alts))</span>
+<a name="l70"><span class="ln">70   </span></a>            <span class="s0">else</span><span class="s1">:</span>
+<a name="l71"><span class="ln">71   </span></a>                <span class="s0">if </span><span class="s1">self._cs_path_exists(fn):</span>
+<a name="l72"><span class="ln">72   </span></a>                    <span class="s1">self.filelist.append(fn)</span>
+<a name="l73"><span class="ln">73   </span></a>                <span class="s0">else</span><span class="s1">:</span>
+<a name="l74"><span class="ln">74   </span></a>                    <span class="s1">self.warn(</span><span class="s4">&quot;standard file '%s' not found&quot; </span><span class="s1">% fn)</span>
+<a name="l75"><span class="ln">75   </span></a>
+<a name="l76"><span class="ln">76   </span></a>    <span class="s0">def </span><span class="s1">_add_defaults_optional(self):</span>
+<a name="l77"><span class="ln">77   </span></a>        <span class="s1">optional = [</span><span class="s4">'test/test*.py'</span><span class="s0">, </span><span class="s4">'setup.cfg'</span><span class="s1">]</span>
+<a name="l78"><span class="ln">78   </span></a>        <span class="s0">for </span><span class="s1">pattern </span><span class="s0">in </span><span class="s1">optional:</span>
+<a name="l79"><span class="ln">79   </span></a>            <span class="s1">files = filter(os.path.isfile</span><span class="s0">, </span><span class="s1">glob(pattern))</span>
+<a name="l80"><span class="ln">80   </span></a>            <span class="s1">self.filelist.extend(files)</span>
+<a name="l81"><span class="ln">81   </span></a>
+<a name="l82"><span class="ln">82   </span></a>    <span class="s0">def </span><span class="s1">_add_defaults_python(self):</span>
+<a name="l83"><span class="ln">83   </span></a>        <span class="s3"># build_py is used to get:</span>
+<a name="l84"><span class="ln">84   </span></a>        <span class="s3">#  - python modules</span>
+<a name="l85"><span class="ln">85   </span></a>        <span class="s3">#  - files defined in package_data</span>
+<a name="l86"><span class="ln">86   </span></a>        <span class="s1">build_py = self.get_finalized_command(</span><span class="s4">'build_py'</span><span class="s1">)</span>
+<a name="l87"><span class="ln">87   </span></a>
+<a name="l88"><span class="ln">88   </span></a>        <span class="s3"># getting python files</span>
+<a name="l89"><span class="ln">89   </span></a>        <span class="s0">if </span><span class="s1">self.distribution.has_pure_modules():</span>
+<a name="l90"><span class="ln">90   </span></a>            <span class="s1">self.filelist.extend(build_py.get_source_files())</span>
+<a name="l91"><span class="ln">91   </span></a>
+<a name="l92"><span class="ln">92   </span></a>        <span class="s3"># getting package_data files</span>
+<a name="l93"><span class="ln">93   </span></a>        <span class="s3"># (computed in build_py.data_files by build_py.finalize_options)</span>
+<a name="l94"><span class="ln">94   </span></a>        <span class="s0">for </span><span class="s1">pkg</span><span class="s0">, </span><span class="s1">src_dir</span><span class="s0">, </span><span class="s1">build_dir</span><span class="s0">, </span><span class="s1">filenames </span><span class="s0">in </span><span class="s1">build_py.data_files:</span>
+<a name="l95"><span class="ln">95   </span></a>            <span class="s0">for </span><span class="s1">filename </span><span class="s0">in </span><span class="s1">filenames:</span>
+<a name="l96"><span class="ln">96   </span></a>                <span class="s1">self.filelist.append(os.path.join(src_dir</span><span class="s0">, </span><span class="s1">filename))</span>
+<a name="l97"><span class="ln">97   </span></a>
+<a name="l98"><span class="ln">98   </span></a>    <span class="s0">def </span><span class="s1">_add_defaults_data_files(self):</span>
+<a name="l99"><span class="ln">99   </span></a>        <span class="s3"># getting distribution.data_files</span>
+<a name="l100"><span class="ln">100  </span></a>        <span class="s0">if </span><span class="s1">self.distribution.has_data_files():</span>
+<a name="l101"><span class="ln">101  </span></a>            <span class="s0">for </span><span class="s1">item </span><span class="s0">in </span><span class="s1">self.distribution.data_files:</span>
+<a name="l102"><span class="ln">102  </span></a>                <span class="s0">if </span><span class="s1">isinstance(item</span><span class="s0">, </span><span class="s1">str):</span>
+<a name="l103"><span class="ln">103  </span></a>                    <span class="s3"># plain file</span>
+<a name="l104"><span class="ln">104  </span></a>                    <span class="s1">item = convert_path(item)</span>
+<a name="l105"><span class="ln">105  </span></a>                    <span class="s0">if </span><span class="s1">os.path.isfile(item):</span>
+<a name="l106"><span class="ln">106  </span></a>                        <span class="s1">self.filelist.append(item)</span>
+<a name="l107"><span class="ln">107  </span></a>                <span class="s0">else</span><span class="s1">:</span>
+<a name="l108"><span class="ln">108  </span></a>                    <span class="s3"># a (dirname, filenames) tuple</span>
+<a name="l109"><span class="ln">109  </span></a>                    <span class="s1">dirname</span><span class="s0">, </span><span class="s1">filenames = item</span>
+<a name="l110"><span class="ln">110  </span></a>                    <span class="s0">for </span><span class="s1">f </span><span class="s0">in </span><span class="s1">filenames:</span>
+<a name="l111"><span class="ln">111  </span></a>                        <span class="s1">f = convert_path(f)</span>
+<a name="l112"><span class="ln">112  </span></a>                        <span class="s0">if </span><span class="s1">os.path.isfile(f):</span>
+<a name="l113"><span class="ln">113  </span></a>                            <span class="s1">self.filelist.append(f)</span>
+<a name="l114"><span class="ln">114  </span></a>
+<a name="l115"><span class="ln">115  </span></a>    <span class="s0">def </span><span class="s1">_add_defaults_ext(self):</span>
+<a name="l116"><span class="ln">116  </span></a>        <span class="s0">if </span><span class="s1">self.distribution.has_ext_modules():</span>
+<a name="l117"><span class="ln">117  </span></a>            <span class="s1">build_ext = self.get_finalized_command(</span><span class="s4">'build_ext'</span><span class="s1">)</span>
+<a name="l118"><span class="ln">118  </span></a>            <span class="s1">self.filelist.extend(build_ext.get_source_files())</span>
+<a name="l119"><span class="ln">119  </span></a>
+<a name="l120"><span class="ln">120  </span></a>    <span class="s0">def </span><span class="s1">_add_defaults_c_libs(self):</span>
+<a name="l121"><span class="ln">121  </span></a>        <span class="s0">if </span><span class="s1">self.distribution.has_c_libraries():</span>
+<a name="l122"><span class="ln">122  </span></a>            <span class="s1">build_clib = self.get_finalized_command(</span><span class="s4">'build_clib'</span><span class="s1">)</span>
+<a name="l123"><span class="ln">123  </span></a>            <span class="s1">self.filelist.extend(build_clib.get_source_files())</span>
+<a name="l124"><span class="ln">124  </span></a>
+<a name="l125"><span class="ln">125  </span></a>    <span class="s0">def </span><span class="s1">_add_defaults_scripts(self):</span>
+<a name="l126"><span class="ln">126  </span></a>        <span class="s0">if </span><span class="s1">self.distribution.has_scripts():</span>
+<a name="l127"><span class="ln">127  </span></a>            <span class="s1">build_scripts = self.get_finalized_command(</span><span class="s4">'build_scripts'</span><span class="s1">)</span>
+<a name="l128"><span class="ln">128  </span></a>            <span class="s1">self.filelist.extend(build_scripts.get_source_files())</span>
+<a name="l129"><span class="ln">129  </span></a>
+<a name="l130"><span class="ln">130  </span></a>
+<a name="l131"><span class="ln">131  </span></a><span class="s0">if </span><span class="s1">hasattr(sdist.sdist</span><span class="s0">, </span><span class="s4">'_add_defaults_standards'</span><span class="s1">):</span>
+<a name="l132"><span class="ln">132  </span></a>    <span class="s3"># disable the functionality already available upstream</span>
+<a name="l133"><span class="ln">133  </span></a>    <span class="s0">class </span><span class="s1">sdist_add_defaults:  </span><span class="s3"># noqa</span>
+<a name="l134"><span class="ln">134  </span></a>        <span class="s0">pass</span>
+<a name="l135"><span class="ln">135  </span></a></pre>
+</body>
+</html>

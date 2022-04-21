@@ -1,0 +1,62 @@
+<html>
+<head>
+<title>usage.rst</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #6897bb;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #a9b7c6;}
+.s3 { color: #a9b7c6;}
+.ln { color: #606366; font-weight: normal; font-style: normal; }
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+usage.rst</font>
+</center></td></tr></table>
+<pre><a name="l1"><span class="ln">1    </span></a><span class="s0">============================================= 
+<a name="l2"><span class="ln">2    </span></a> worldlib -- library for country code lookup 
+<a name="l3"><span class="ln">3    </span></a>============================================= 
+<a name="l4"><span class="ln">4    </span></a></span>
+<a name="l5"><span class="ln">5    </span></a><span class="s1">To use the </span><span class="s2">``worldlib`` </span><span class="s1">library, import the database which reads a canned,</span>
+<a name="l6"><span class="ln">6    </span></a><span class="s1">pre-generated set of code mappings:: 
+<a name="l7"><span class="ln">7    </span></a> 
+<a name="l8"><span class="ln">8    </span></a>    </span><span class="s3">&gt;&gt;&gt; from worldlib.database import Database 
+<a name="l9"><span class="ln">9    </span></a>    &gt;&gt;&gt; db = Database() 
+<a name="l10"><span class="ln">10   </span></a> 
+<a name="l11"><span class="ln">11   </span></a></span><span class="s1">You can look up a country code:: 
+<a name="l12"><span class="ln">12   </span></a> 
+<a name="l13"><span class="ln">13   </span></a>    </span><span class="s3">&gt;&gt;&gt; print(db.lookup_code('it')) 
+<a name="l14"><span class="ln">14   </span></a>    Italy 
+<a name="l15"><span class="ln">15   </span></a> 
+<a name="l16"><span class="ln">16   </span></a></span><span class="s1">Country codes are case-insensitive:: 
+<a name="l17"><span class="ln">17   </span></a> 
+<a name="l18"><span class="ln">18   </span></a>    </span><span class="s3">&gt;&gt;&gt; print(db.lookup_code('It')) 
+<a name="l19"><span class="ln">19   </span></a>    Italy 
+<a name="l20"><span class="ln">20   </span></a> 
+<a name="l21"><span class="ln">21   </span></a></span><span class="s1">You can find all matches for a particular string, which allows you for example</span>
+<a name="l22"><span class="ln">22   </span></a><span class="s1">to implement a reverse look up.   The matches are returned sorted in</span>
+<a name="l23"><span class="ln">23   </span></a><span class="s1">alphabetical order.  As with code look ups, the match string is case</span>
+<a name="l24"><span class="ln">24   </span></a><span class="s1">insensitive:: 
+<a name="l25"><span class="ln">25   </span></a> 
+<a name="l26"><span class="ln">26   </span></a>    </span><span class="s3">&gt;&gt;&gt; for code, country in db.find_matches('United'): 
+<a name="l27"><span class="ln">27   </span></a>    ...     print(code, 'is', country) 
+<a name="l28"><span class="ln">28   </span></a>    ae is United Arab Emirates (the) 
+<a name="l29"><span class="ln">29   </span></a>    gb is United Kingdom of Great Britain and Northern Ireland (the) 
+<a name="l30"><span class="ln">30   </span></a>    tz is Tanzania, United Republic of 
+<a name="l31"><span class="ln">31   </span></a>    uk is United Kingdom (common practice) 
+<a name="l32"><span class="ln">32   </span></a>    um is United States Minor Outlying Islands (the) 
+<a name="l33"><span class="ln">33   </span></a>    us is United States of America (the) 
+<a name="l34"><span class="ln">34   </span></a> 
+<a name="l35"><span class="ln">35   </span></a></span><span class="s1">You can iterate through all the codes:: 
+<a name="l36"><span class="ln">36   </span></a> 
+<a name="l37"><span class="ln">37   </span></a>    </span><span class="s3">&gt;&gt;&gt; for code in db: 
+<a name="l38"><span class="ln">38   </span></a>    ...     print(code) 
+<a name="l39"><span class="ln">39   </span></a>    ac 
+<a name="l40"><span class="ln">40   </span></a>    ... 
+<a name="l41"><span class="ln">41   </span></a>    zw 
+<a name="l42"><span class="ln">42   </span></a></span></pre>
+</body>
+</html>

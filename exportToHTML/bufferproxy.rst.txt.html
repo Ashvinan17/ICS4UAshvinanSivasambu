@@ -1,0 +1,131 @@
+<html>
+<head>
+<title>bufferproxy.rst.txt</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #a9b7c6;}
+.ln { color: #606366; font-weight: normal; font-style: normal; }
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+bufferproxy.rst.txt</font>
+</center></td></tr></table>
+<pre><a name="l1"><span class="ln">1    </span></a><span class="s0">.. include:: common.txt</span>
+<a name="l2"><span class="ln">2    </span></a>
+<a name="l3"><span class="ln">3    </span></a><span class="s0">.. default-domain:: py</span>
+<a name="l4"><span class="ln">4    </span></a>
+<a name="l5"><span class="ln">5    </span></a><span class="s0">:class:`pygame.BufferProxy`</span>
+<a name="l6"><span class="ln">6    </span></a><span class="s0">===========================</span>
+<a name="l7"><span class="ln">7    </span></a>
+<a name="l8"><span class="ln">8    </span></a><span class="s0">.. currentmodule:: pygame</span>
+<a name="l9"><span class="ln">9    </span></a>
+<a name="l10"><span class="ln">10   </span></a><span class="s0">.. class:: BufferProxy</span>
+<a name="l11"><span class="ln">11   </span></a>
+<a name="l12"><span class="ln">12   </span></a>   <span class="s0">| :sl:`pygame object to export a surface buffer through an array protocol`</span>
+<a name="l13"><span class="ln">13   </span></a>   <span class="s0">| :sg:`BufferProxy(&lt;parent&gt;) -&gt; BufferProxy`</span>
+<a name="l14"><span class="ln">14   </span></a>
+<a name="l15"><span class="ln">15   </span></a>   <span class="s0">:class:`BufferProxy` is a pygame support type, designed as the return value</span>
+<a name="l16"><span class="ln">16   </span></a>   <span class="s0">of the :meth:`Surface.get_buffer` and :meth:`Surface.get_view` methods.</span>
+<a name="l17"><span class="ln">17   </span></a>   <span class="s0">For all Python versions a :class:`BufferProxy` object exports a C struct</span>
+<a name="l18"><span class="ln">18   </span></a>   <span class="s0">and Python level array interface on behalf of its parent object's buffer.</span>
+<a name="l19"><span class="ln">19   </span></a>   <span class="s0">A new buffer interface is also exported.</span>
+<a name="l20"><span class="ln">20   </span></a>   <span class="s0">In pygame, :class:`BufferProxy` is key to implementing the</span>
+<a name="l21"><span class="ln">21   </span></a>   <span class="s0">:mod:`pygame.surfarray` module.</span>
+<a name="l22"><span class="ln">22   </span></a>
+<a name="l23"><span class="ln">23   </span></a>   <span class="s0">:class:`BufferProxy` instances can be created directly from Python code,</span>
+<a name="l24"><span class="ln">24   </span></a>   <span class="s0">either for a parent that exports an interface, or from a Python ``dict``</span>
+<a name="l25"><span class="ln">25   </span></a>   <span class="s0">describing an object's buffer layout. The dict entries are based on the</span>
+<a name="l26"><span class="ln">26   </span></a>   <span class="s0">Python level array interface mapping. The following keys are recognized:</span>
+<a name="l27"><span class="ln">27   </span></a>
+<a name="l28"><span class="ln">28   </span></a>      <span class="s0">``&quot;shape&quot;`` : tuple</span>
+<a name="l29"><span class="ln">29   </span></a>         <span class="s0">The length of each array dimension as a tuple of integers. The</span>
+<a name="l30"><span class="ln">30   </span></a>         <span class="s0">length of the tuple is the number of dimensions in the array.</span>
+<a name="l31"><span class="ln">31   </span></a>
+<a name="l32"><span class="ln">32   </span></a>      <span class="s0">``&quot;typestr&quot;`` : string</span>
+<a name="l33"><span class="ln">33   </span></a>         <span class="s0">The array element type as a length 3 string. The first character</span>
+<a name="l34"><span class="ln">34   </span></a>         <span class="s0">gives byteorder, '&lt;' for little-endian, '&gt;' for big-endian, and</span>
+<a name="l35"><span class="ln">35   </span></a>         <span class="s0">'\|' for not applicable. The second character is the element type,</span>
+<a name="l36"><span class="ln">36   </span></a>         <span class="s0">'i' for signed integer, 'u' for unsigned integer, 'f' for floating</span>
+<a name="l37"><span class="ln">37   </span></a>         <span class="s0">point, and 'V' for an chunk of bytes. The third character gives the</span>
+<a name="l38"><span class="ln">38   </span></a>         <span class="s0">bytesize of the element, from '1' to '9' bytes. So, for example,</span>
+<a name="l39"><span class="ln">39   </span></a>         <span class="s0">&quot;&lt;u4&quot; is an unsigned 4 byte little-endian integer, such as a</span>
+<a name="l40"><span class="ln">40   </span></a>         <span class="s0">32 bit pixel on a PC, while &quot;\|V3&quot; would represent a 24 bit pixel,</span>
+<a name="l41"><span class="ln">41   </span></a>         <span class="s0">which has no integer equivalent.</span>
+<a name="l42"><span class="ln">42   </span></a>
+<a name="l43"><span class="ln">43   </span></a>      <span class="s0">``&quot;data&quot;`` : tuple</span>
+<a name="l44"><span class="ln">44   </span></a>         <span class="s0">The physical buffer start address and a read-only flag as a length</span>
+<a name="l45"><span class="ln">45   </span></a>         <span class="s0">2 tuple. The address is an integer value, while the read-only flag</span>
+<a name="l46"><span class="ln">46   </span></a>         <span class="s0">is a bool—``False`` for writable, ``True`` for read-only.</span>
+<a name="l47"><span class="ln">47   </span></a>
+<a name="l48"><span class="ln">48   </span></a>      <span class="s0">``&quot;strides&quot;`` : tuple : (optional)</span>
+<a name="l49"><span class="ln">49   </span></a>         <span class="s0">Array stride information as a tuple of integers. It is required</span>
+<a name="l50"><span class="ln">50   </span></a>	 <span class="s0">only of non C-contiguous arrays. The tuple length must match</span>
+<a name="l51"><span class="ln">51   </span></a>	 <span class="s0">that of ``&quot;shape&quot;``.</span>
+<a name="l52"><span class="ln">52   </span></a>
+<a name="l53"><span class="ln">53   </span></a>      <span class="s0">``&quot;parent&quot;`` : object : (optional)</span>
+<a name="l54"><span class="ln">54   </span></a>         <span class="s0">The exporting object. It can be used to keep the parent object</span>
+<a name="l55"><span class="ln">55   </span></a>         <span class="s0">alive while its buffer is visible.</span>
+<a name="l56"><span class="ln">56   </span></a>
+<a name="l57"><span class="ln">57   </span></a>      <span class="s0">``&quot;before&quot;`` : callable : (optional)</span>
+<a name="l58"><span class="ln">58   </span></a>         <span class="s0">Callback invoked when the :class:`BufferProxy` instance</span>
+<a name="l59"><span class="ln">59   </span></a>         <span class="s0">exports the buffer. The callback is given one argument, the</span>
+<a name="l60"><span class="ln">60   </span></a>	 <span class="s0">``&quot;parent&quot;`` object if given, otherwise ``None``.</span>
+<a name="l61"><span class="ln">61   </span></a>         <span class="s0">The callback is useful for setting a lock on the parent.</span>
+<a name="l62"><span class="ln">62   </span></a>
+<a name="l63"><span class="ln">63   </span></a>      <span class="s0">``&quot;after&quot;`` : callable : (optional)</span>
+<a name="l64"><span class="ln">64   </span></a>         <span class="s0">Callback invoked when an exported buffer is released.</span>
+<a name="l65"><span class="ln">65   </span></a>         <span class="s0">The callback is passed on argument, the ``&quot;parent&quot;`` object if given,</span>
+<a name="l66"><span class="ln">66   </span></a>         <span class="s0">otherwise None. The callback is useful for releasing a lock on the</span>
+<a name="l67"><span class="ln">67   </span></a>         <span class="s0">parent.</span>
+<a name="l68"><span class="ln">68   </span></a>      
+<a name="l69"><span class="ln">69   </span></a>   <span class="s0">The BufferProxy class supports subclassing, instance variables, and weak</span>
+<a name="l70"><span class="ln">70   </span></a>   <span class="s0">references.</span>
+<a name="l71"><span class="ln">71   </span></a>
+<a name="l72"><span class="ln">72   </span></a>   <span class="s0">.. versionadded:: 1.8.0</span>
+<a name="l73"><span class="ln">73   </span></a>   <span class="s0">.. versionextended:: 1.9.2</span>
+<a name="l74"><span class="ln">74   </span></a>
+<a name="l75"><span class="ln">75   </span></a>   <span class="s0">.. attribute:: parent</span>
+<a name="l76"><span class="ln">76   </span></a>
+<a name="l77"><span class="ln">77   </span></a>      <span class="s0">| :sl:`Return wrapped exporting object.`</span>
+<a name="l78"><span class="ln">78   </span></a>      <span class="s0">| :sg:`parent -&gt; Surface`</span>
+<a name="l79"><span class="ln">79   </span></a>      <span class="s0">| :sg:`parent -&gt; &lt;parent&gt;`</span>
+<a name="l80"><span class="ln">80   </span></a>
+<a name="l81"><span class="ln">81   </span></a>      <span class="s0">The :class:`Surface` which returned the :class:`BufferProxy` object or</span>
+<a name="l82"><span class="ln">82   </span></a>      <span class="s0">the object passed to a :class:`BufferProxy` call.</span>
+<a name="l83"><span class="ln">83   </span></a>
+<a name="l84"><span class="ln">84   </span></a>   <span class="s0">.. attribute:: length</span>
+<a name="l85"><span class="ln">85   </span></a>
+<a name="l86"><span class="ln">86   </span></a>      <span class="s0">| :sl:`The size, in bytes, of the exported buffer.`</span>
+<a name="l87"><span class="ln">87   </span></a>      <span class="s0">| :sg:`length -&gt; int`</span>
+<a name="l88"><span class="ln">88   </span></a>
+<a name="l89"><span class="ln">89   </span></a>      <span class="s0">The number of valid bytes of data exported. For discontinuous data,</span>
+<a name="l90"><span class="ln">90   </span></a>      <span class="s0">that is data which is not a single block of memory, the bytes within</span>
+<a name="l91"><span class="ln">91   </span></a>      <span class="s0">the gaps are excluded from the count. This property is equivalent to</span>
+<a name="l92"><span class="ln">92   </span></a>      <span class="s0">the ``Py_buffer`` C struct ``len`` field.</span>
+<a name="l93"><span class="ln">93   </span></a>
+<a name="l94"><span class="ln">94   </span></a>   <span class="s0">.. attribute:: raw</span>
+<a name="l95"><span class="ln">95   </span></a>
+<a name="l96"><span class="ln">96   </span></a>      <span class="s0">| :sl:`A copy of the exported buffer as a single block of bytes.`</span>
+<a name="l97"><span class="ln">97   </span></a>      <span class="s0">| :sg:`raw -&gt; bytes`</span>
+<a name="l98"><span class="ln">98   </span></a>
+<a name="l99"><span class="ln">99   </span></a>      <span class="s0">The buffer data as a ``str``/``bytes`` object.</span>
+<a name="l100"><span class="ln">100  </span></a>      <span class="s0">Any gaps in the exported data are removed.</span>
+<a name="l101"><span class="ln">101  </span></a>
+<a name="l102"><span class="ln">102  </span></a>   <span class="s0">.. method:: write</span>
+<a name="l103"><span class="ln">103  </span></a>
+<a name="l104"><span class="ln">104  </span></a>      <span class="s0">| :sl:`Write raw bytes to object buffer.`</span>
+<a name="l105"><span class="ln">105  </span></a>      <span class="s0">| :sg:`write(buffer, offset=0)`</span>
+<a name="l106"><span class="ln">106  </span></a>
+<a name="l107"><span class="ln">107  </span></a>      <span class="s0">Overwrite bytes in the parent object's data. The data must be C or F</span>
+<a name="l108"><span class="ln">108  </span></a>      <span class="s0">contiguous, otherwise a ValueError is raised. Argument `buffer` is a</span>
+<a name="l109"><span class="ln">109  </span></a>      <span class="s0">``str``/``bytes`` object. An optional offset gives a</span>
+<a name="l110"><span class="ln">110  </span></a>      <span class="s0">start position, in bytes, within the buffer where overwriting begins.</span>
+<a name="l111"><span class="ln">111  </span></a>      <span class="s0">If the offset is negative or greater that or equal to the buffer proxy's</span>
+<a name="l112"><span class="ln">112  </span></a>      <span class="s0">:attr:`length` value, an ``IndexException`` is raised.</span>
+<a name="l113"><span class="ln">113  </span></a>      <span class="s0">If ``len(buffer) &gt; proxy.length + offset``, a ``ValueError`` is raised.</span>
+<a name="l114"><span class="ln">114  </span></a></pre>
+</body>
+</html>

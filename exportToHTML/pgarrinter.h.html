@@ -1,0 +1,47 @@
+<html>
+<head>
+<title>pgarrinter.h</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #808080;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #cc7832;}
+.s3 { color: #6897bb;}
+.ln { color: #606366; font-weight: normal; font-style: normal; }
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+pgarrinter.h</font>
+</center></td></tr></table>
+<pre><a name="l1"><span class="ln">1    </span></a><span class="s0">/* array structure interface version 3 declarations */</span>
+<a name="l2"><span class="ln">2    </span></a>
+<a name="l3"><span class="ln">3    </span></a><span class="s2">#if </span><span class="s1">!defined(PG_ARRAYINTER_HEADER)</span>
+<a name="l4"><span class="ln">4    </span></a><span class="s2">#define </span><span class="s1">PG_ARRAYINTER_HEADER</span>
+<a name="l5"><span class="ln">5    </span></a>
+<a name="l6"><span class="ln">6    </span></a><span class="s2">static const int </span><span class="s1">PAI_CONTIGUOUS = </span><span class="s3">0x01</span><span class="s1">;</span>
+<a name="l7"><span class="ln">7    </span></a><span class="s2">static const int </span><span class="s1">PAI_FORTRAN = </span><span class="s3">0x02</span><span class="s1">;</span>
+<a name="l8"><span class="ln">8    </span></a><span class="s2">static const int </span><span class="s1">PAI_ALIGNED = </span><span class="s3">0x100</span><span class="s1">;</span>
+<a name="l9"><span class="ln">9    </span></a><span class="s2">static const int </span><span class="s1">PAI_NOTSWAPPED = </span><span class="s3">0x200</span><span class="s1">;</span>
+<a name="l10"><span class="ln">10   </span></a><span class="s2">static const int </span><span class="s1">PAI_WRITEABLE = </span><span class="s3">0x400</span><span class="s1">;</span>
+<a name="l11"><span class="ln">11   </span></a><span class="s2">static const int </span><span class="s1">PAI_ARR_HAS_DESCR = </span><span class="s3">0x800</span><span class="s1">;</span>
+<a name="l12"><span class="ln">12   </span></a>
+<a name="l13"><span class="ln">13   </span></a><span class="s2">typedef struct </span><span class="s1">{</span>
+<a name="l14"><span class="ln">14   </span></a>    <span class="s2">int </span><span class="s1">two;              </span><span class="s0">/* contains the integer 2 -- simple sanity check */</span>
+<a name="l15"><span class="ln">15   </span></a>    <span class="s2">int </span><span class="s1">nd;               </span><span class="s0">/* number of dimensions */</span>
+<a name="l16"><span class="ln">16   </span></a>    <span class="s2">char </span><span class="s1">typekind;        </span><span class="s0">/* kind in array -- character code of typestr */</span>
+<a name="l17"><span class="ln">17   </span></a>    <span class="s2">int </span><span class="s1">itemsize;         </span><span class="s0">/* size of each element */</span>
+<a name="l18"><span class="ln">18   </span></a>    <span class="s2">int </span><span class="s1">flags;            </span><span class="s0">/* flags indicating how the data should be */</span>
+<a name="l19"><span class="ln">19   </span></a>                          <span class="s0">/* interpreted */</span>
+<a name="l20"><span class="ln">20   </span></a>    <span class="s1">Py_intptr_t *shape;   </span><span class="s0">/* A length-nd array of shape information */</span>
+<a name="l21"><span class="ln">21   </span></a>    <span class="s1">Py_intptr_t *strides; </span><span class="s0">/* A length-nd array of stride information */</span>
+<a name="l22"><span class="ln">22   </span></a>    <span class="s2">void </span><span class="s1">*data;           </span><span class="s0">/* A pointer to the first element of the array */</span>
+<a name="l23"><span class="ln">23   </span></a>    <span class="s1">PyObject *descr;      </span><span class="s0">/* NULL or a data-description */</span>
+<a name="l24"><span class="ln">24   </span></a><span class="s1">} PyArrayInterface;</span>
+<a name="l25"><span class="ln">25   </span></a>
+<a name="l26"><span class="ln">26   </span></a><span class="s2">#endif</span>
+<a name="l27"><span class="ln">27   </span></a></pre>
+</body>
+</html>

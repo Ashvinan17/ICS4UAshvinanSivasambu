@@ -1,0 +1,194 @@
+<html>
+<head>
+<title>spinners.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cc7832;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #808080;}
+.s3 { color: #6a8759;}
+.s4 { color: #6897bb;}
+.ln { color: #606366; font-weight: normal; font-style: normal; }
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+spinners.py</font>
+</center></td></tr></table>
+<pre><a name="l1"><span class="ln">1    </span></a><span class="s0">import </span><span class="s1">contextlib</span>
+<a name="l2"><span class="ln">2    </span></a><span class="s0">import </span><span class="s1">itertools</span>
+<a name="l3"><span class="ln">3    </span></a><span class="s0">import </span><span class="s1">logging</span>
+<a name="l4"><span class="ln">4    </span></a><span class="s0">import </span><span class="s1">sys</span>
+<a name="l5"><span class="ln">5    </span></a><span class="s0">import </span><span class="s1">time</span>
+<a name="l6"><span class="ln">6    </span></a><span class="s0">from </span><span class="s1">typing </span><span class="s0">import </span><span class="s1">IO</span><span class="s0">, </span><span class="s1">Iterator</span>
+<a name="l7"><span class="ln">7    </span></a>
+<a name="l8"><span class="ln">8    </span></a><span class="s0">from </span><span class="s1">pip._vendor.progress </span><span class="s0">import </span><span class="s1">HIDE_CURSOR</span><span class="s0">, </span><span class="s1">SHOW_CURSOR</span>
+<a name="l9"><span class="ln">9    </span></a>
+<a name="l10"><span class="ln">10   </span></a><span class="s0">from </span><span class="s1">pip._internal.utils.compat </span><span class="s0">import </span><span class="s1">WINDOWS</span>
+<a name="l11"><span class="ln">11   </span></a><span class="s0">from </span><span class="s1">pip._internal.utils.logging </span><span class="s0">import </span><span class="s1">get_indentation</span>
+<a name="l12"><span class="ln">12   </span></a>
+<a name="l13"><span class="ln">13   </span></a><span class="s1">logger = logging.getLogger(__name__)</span>
+<a name="l14"><span class="ln">14   </span></a>
+<a name="l15"><span class="ln">15   </span></a>
+<a name="l16"><span class="ln">16   </span></a><span class="s0">class </span><span class="s1">SpinnerInterface:</span>
+<a name="l17"><span class="ln">17   </span></a>    <span class="s0">def </span><span class="s1">spin(self):</span>
+<a name="l18"><span class="ln">18   </span></a>        <span class="s2"># type: () -&gt; None</span>
+<a name="l19"><span class="ln">19   </span></a>        <span class="s0">raise </span><span class="s1">NotImplementedError()</span>
+<a name="l20"><span class="ln">20   </span></a>
+<a name="l21"><span class="ln">21   </span></a>    <span class="s0">def </span><span class="s1">finish(self</span><span class="s0">, </span><span class="s1">final_status):</span>
+<a name="l22"><span class="ln">22   </span></a>        <span class="s2"># type: (str) -&gt; None</span>
+<a name="l23"><span class="ln">23   </span></a>        <span class="s0">raise </span><span class="s1">NotImplementedError()</span>
+<a name="l24"><span class="ln">24   </span></a>
+<a name="l25"><span class="ln">25   </span></a>
+<a name="l26"><span class="ln">26   </span></a><span class="s0">class </span><span class="s1">InteractiveSpinner(SpinnerInterface):</span>
+<a name="l27"><span class="ln">27   </span></a>    <span class="s0">def </span><span class="s1">__init__(</span>
+<a name="l28"><span class="ln">28   </span></a>        <span class="s1">self</span><span class="s0">,</span>
+<a name="l29"><span class="ln">29   </span></a>        <span class="s1">message</span><span class="s0">,</span>
+<a name="l30"><span class="ln">30   </span></a>        <span class="s1">file=</span><span class="s0">None,</span>
+<a name="l31"><span class="ln">31   </span></a>        <span class="s1">spin_chars=</span><span class="s3">&quot;-</span><span class="s0">\\</span><span class="s3">|/&quot;</span><span class="s0">,</span>
+<a name="l32"><span class="ln">32   </span></a>        <span class="s2"># Empirically, 8 updates/second looks nice</span>
+<a name="l33"><span class="ln">33   </span></a>        <span class="s1">min_update_interval_seconds=</span><span class="s4">0.125</span><span class="s0">,</span>
+<a name="l34"><span class="ln">34   </span></a>    <span class="s1">):</span>
+<a name="l35"><span class="ln">35   </span></a>        <span class="s2"># type: (str, IO[str], str, float) -&gt; None</span>
+<a name="l36"><span class="ln">36   </span></a>        <span class="s1">self._message = message</span>
+<a name="l37"><span class="ln">37   </span></a>        <span class="s0">if </span><span class="s1">file </span><span class="s0">is None</span><span class="s1">:</span>
+<a name="l38"><span class="ln">38   </span></a>            <span class="s1">file = sys.stdout</span>
+<a name="l39"><span class="ln">39   </span></a>        <span class="s1">self._file = file</span>
+<a name="l40"><span class="ln">40   </span></a>        <span class="s1">self._rate_limiter = RateLimiter(min_update_interval_seconds)</span>
+<a name="l41"><span class="ln">41   </span></a>        <span class="s1">self._finished = </span><span class="s0">False</span>
+<a name="l42"><span class="ln">42   </span></a>
+<a name="l43"><span class="ln">43   </span></a>        <span class="s1">self._spin_cycle = itertools.cycle(spin_chars)</span>
+<a name="l44"><span class="ln">44   </span></a>
+<a name="l45"><span class="ln">45   </span></a>        <span class="s1">self._file.write(</span><span class="s3">&quot; &quot; </span><span class="s1">* get_indentation() + self._message + </span><span class="s3">&quot; ... &quot;</span><span class="s1">)</span>
+<a name="l46"><span class="ln">46   </span></a>        <span class="s1">self._width = </span><span class="s4">0</span>
+<a name="l47"><span class="ln">47   </span></a>
+<a name="l48"><span class="ln">48   </span></a>    <span class="s0">def </span><span class="s1">_write(self</span><span class="s0">, </span><span class="s1">status):</span>
+<a name="l49"><span class="ln">49   </span></a>        <span class="s2"># type: (str) -&gt; None</span>
+<a name="l50"><span class="ln">50   </span></a>        <span class="s0">assert not </span><span class="s1">self._finished</span>
+<a name="l51"><span class="ln">51   </span></a>        <span class="s2"># Erase what we wrote before by backspacing to the beginning, writing</span>
+<a name="l52"><span class="ln">52   </span></a>        <span class="s2"># spaces to overwrite the old text, and then backspacing again</span>
+<a name="l53"><span class="ln">53   </span></a>        <span class="s1">backup = </span><span class="s3">&quot;</span><span class="s0">\b</span><span class="s3">&quot; </span><span class="s1">* self._width</span>
+<a name="l54"><span class="ln">54   </span></a>        <span class="s1">self._file.write(backup + </span><span class="s3">&quot; &quot; </span><span class="s1">* self._width + backup)</span>
+<a name="l55"><span class="ln">55   </span></a>        <span class="s2"># Now we have a blank slate to add our status</span>
+<a name="l56"><span class="ln">56   </span></a>        <span class="s1">self._file.write(status)</span>
+<a name="l57"><span class="ln">57   </span></a>        <span class="s1">self._width = len(status)</span>
+<a name="l58"><span class="ln">58   </span></a>        <span class="s1">self._file.flush()</span>
+<a name="l59"><span class="ln">59   </span></a>        <span class="s1">self._rate_limiter.reset()</span>
+<a name="l60"><span class="ln">60   </span></a>
+<a name="l61"><span class="ln">61   </span></a>    <span class="s0">def </span><span class="s1">spin(self):</span>
+<a name="l62"><span class="ln">62   </span></a>        <span class="s2"># type: () -&gt; None</span>
+<a name="l63"><span class="ln">63   </span></a>        <span class="s0">if </span><span class="s1">self._finished:</span>
+<a name="l64"><span class="ln">64   </span></a>            <span class="s0">return</span>
+<a name="l65"><span class="ln">65   </span></a>        <span class="s0">if not </span><span class="s1">self._rate_limiter.ready():</span>
+<a name="l66"><span class="ln">66   </span></a>            <span class="s0">return</span>
+<a name="l67"><span class="ln">67   </span></a>        <span class="s1">self._write(next(self._spin_cycle))</span>
+<a name="l68"><span class="ln">68   </span></a>
+<a name="l69"><span class="ln">69   </span></a>    <span class="s0">def </span><span class="s1">finish(self</span><span class="s0">, </span><span class="s1">final_status):</span>
+<a name="l70"><span class="ln">70   </span></a>        <span class="s2"># type: (str) -&gt; None</span>
+<a name="l71"><span class="ln">71   </span></a>        <span class="s0">if </span><span class="s1">self._finished:</span>
+<a name="l72"><span class="ln">72   </span></a>            <span class="s0">return</span>
+<a name="l73"><span class="ln">73   </span></a>        <span class="s1">self._write(final_status)</span>
+<a name="l74"><span class="ln">74   </span></a>        <span class="s1">self._file.write(</span><span class="s3">&quot;</span><span class="s0">\n</span><span class="s3">&quot;</span><span class="s1">)</span>
+<a name="l75"><span class="ln">75   </span></a>        <span class="s1">self._file.flush()</span>
+<a name="l76"><span class="ln">76   </span></a>        <span class="s1">self._finished = </span><span class="s0">True</span>
+<a name="l77"><span class="ln">77   </span></a>
+<a name="l78"><span class="ln">78   </span></a>
+<a name="l79"><span class="ln">79   </span></a><span class="s2"># Used for dumb terminals, non-interactive installs (no tty), etc.</span>
+<a name="l80"><span class="ln">80   </span></a><span class="s2"># We still print updates occasionally (once every 60 seconds by default) to</span>
+<a name="l81"><span class="ln">81   </span></a><span class="s2"># act as a keep-alive for systems like Travis-CI that take lack-of-output as</span>
+<a name="l82"><span class="ln">82   </span></a><span class="s2"># an indication that a task has frozen.</span>
+<a name="l83"><span class="ln">83   </span></a><span class="s0">class </span><span class="s1">NonInteractiveSpinner(SpinnerInterface):</span>
+<a name="l84"><span class="ln">84   </span></a>    <span class="s0">def </span><span class="s1">__init__(self</span><span class="s0">, </span><span class="s1">message</span><span class="s0">, </span><span class="s1">min_update_interval_seconds=</span><span class="s4">60</span><span class="s1">):</span>
+<a name="l85"><span class="ln">85   </span></a>        <span class="s2"># type: (str, float) -&gt; None</span>
+<a name="l86"><span class="ln">86   </span></a>        <span class="s1">self._message = message</span>
+<a name="l87"><span class="ln">87   </span></a>        <span class="s1">self._finished = </span><span class="s0">False</span>
+<a name="l88"><span class="ln">88   </span></a>        <span class="s1">self._rate_limiter = RateLimiter(min_update_interval_seconds)</span>
+<a name="l89"><span class="ln">89   </span></a>        <span class="s1">self._update(</span><span class="s3">&quot;started&quot;</span><span class="s1">)</span>
+<a name="l90"><span class="ln">90   </span></a>
+<a name="l91"><span class="ln">91   </span></a>    <span class="s0">def </span><span class="s1">_update(self</span><span class="s0">, </span><span class="s1">status):</span>
+<a name="l92"><span class="ln">92   </span></a>        <span class="s2"># type: (str) -&gt; None</span>
+<a name="l93"><span class="ln">93   </span></a>        <span class="s0">assert not </span><span class="s1">self._finished</span>
+<a name="l94"><span class="ln">94   </span></a>        <span class="s1">self._rate_limiter.reset()</span>
+<a name="l95"><span class="ln">95   </span></a>        <span class="s1">logger.info(</span><span class="s3">&quot;%s: %s&quot;</span><span class="s0">, </span><span class="s1">self._message</span><span class="s0">, </span><span class="s1">status)</span>
+<a name="l96"><span class="ln">96   </span></a>
+<a name="l97"><span class="ln">97   </span></a>    <span class="s0">def </span><span class="s1">spin(self):</span>
+<a name="l98"><span class="ln">98   </span></a>        <span class="s2"># type: () -&gt; None</span>
+<a name="l99"><span class="ln">99   </span></a>        <span class="s0">if </span><span class="s1">self._finished:</span>
+<a name="l100"><span class="ln">100  </span></a>            <span class="s0">return</span>
+<a name="l101"><span class="ln">101  </span></a>        <span class="s0">if not </span><span class="s1">self._rate_limiter.ready():</span>
+<a name="l102"><span class="ln">102  </span></a>            <span class="s0">return</span>
+<a name="l103"><span class="ln">103  </span></a>        <span class="s1">self._update(</span><span class="s3">&quot;still running...&quot;</span><span class="s1">)</span>
+<a name="l104"><span class="ln">104  </span></a>
+<a name="l105"><span class="ln">105  </span></a>    <span class="s0">def </span><span class="s1">finish(self</span><span class="s0">, </span><span class="s1">final_status):</span>
+<a name="l106"><span class="ln">106  </span></a>        <span class="s2"># type: (str) -&gt; None</span>
+<a name="l107"><span class="ln">107  </span></a>        <span class="s0">if </span><span class="s1">self._finished:</span>
+<a name="l108"><span class="ln">108  </span></a>            <span class="s0">return</span>
+<a name="l109"><span class="ln">109  </span></a>        <span class="s1">self._update(</span><span class="s3">f&quot;finished with status '</span><span class="s0">{</span><span class="s1">final_status</span><span class="s0">}</span><span class="s3">'&quot;</span><span class="s1">)</span>
+<a name="l110"><span class="ln">110  </span></a>        <span class="s1">self._finished = </span><span class="s0">True</span>
+<a name="l111"><span class="ln">111  </span></a>
+<a name="l112"><span class="ln">112  </span></a>
+<a name="l113"><span class="ln">113  </span></a><span class="s0">class </span><span class="s1">RateLimiter:</span>
+<a name="l114"><span class="ln">114  </span></a>    <span class="s0">def </span><span class="s1">__init__(self</span><span class="s0">, </span><span class="s1">min_update_interval_seconds):</span>
+<a name="l115"><span class="ln">115  </span></a>        <span class="s2"># type: (float) -&gt; None</span>
+<a name="l116"><span class="ln">116  </span></a>        <span class="s1">self._min_update_interval_seconds = min_update_interval_seconds</span>
+<a name="l117"><span class="ln">117  </span></a>        <span class="s1">self._last_update = </span><span class="s4">0  </span><span class="s2"># type: float</span>
+<a name="l118"><span class="ln">118  </span></a>
+<a name="l119"><span class="ln">119  </span></a>    <span class="s0">def </span><span class="s1">ready(self):</span>
+<a name="l120"><span class="ln">120  </span></a>        <span class="s2"># type: () -&gt; bool</span>
+<a name="l121"><span class="ln">121  </span></a>        <span class="s1">now = time.time()</span>
+<a name="l122"><span class="ln">122  </span></a>        <span class="s1">delta = now - self._last_update</span>
+<a name="l123"><span class="ln">123  </span></a>        <span class="s0">return </span><span class="s1">delta &gt;= self._min_update_interval_seconds</span>
+<a name="l124"><span class="ln">124  </span></a>
+<a name="l125"><span class="ln">125  </span></a>    <span class="s0">def </span><span class="s1">reset(self):</span>
+<a name="l126"><span class="ln">126  </span></a>        <span class="s2"># type: () -&gt; None</span>
+<a name="l127"><span class="ln">127  </span></a>        <span class="s1">self._last_update = time.time()</span>
+<a name="l128"><span class="ln">128  </span></a>
+<a name="l129"><span class="ln">129  </span></a>
+<a name="l130"><span class="ln">130  </span></a><span class="s1">@contextlib.contextmanager</span>
+<a name="l131"><span class="ln">131  </span></a><span class="s0">def </span><span class="s1">open_spinner(message):</span>
+<a name="l132"><span class="ln">132  </span></a>    <span class="s2"># type: (str) -&gt; Iterator[SpinnerInterface]</span>
+<a name="l133"><span class="ln">133  </span></a>    <span class="s2"># Interactive spinner goes directly to sys.stdout rather than being routed</span>
+<a name="l134"><span class="ln">134  </span></a>    <span class="s2"># through the logging system, but it acts like it has level INFO,</span>
+<a name="l135"><span class="ln">135  </span></a>    <span class="s2"># i.e. it's only displayed if we're at level INFO or better.</span>
+<a name="l136"><span class="ln">136  </span></a>    <span class="s2"># Non-interactive spinner goes through the logging system, so it is always</span>
+<a name="l137"><span class="ln">137  </span></a>    <span class="s2"># in sync with logging configuration.</span>
+<a name="l138"><span class="ln">138  </span></a>    <span class="s0">if </span><span class="s1">sys.stdout.isatty() </span><span class="s0">and </span><span class="s1">logger.getEffectiveLevel() &lt;= logging.INFO:</span>
+<a name="l139"><span class="ln">139  </span></a>        <span class="s1">spinner = InteractiveSpinner(message)  </span><span class="s2"># type: SpinnerInterface</span>
+<a name="l140"><span class="ln">140  </span></a>    <span class="s0">else</span><span class="s1">:</span>
+<a name="l141"><span class="ln">141  </span></a>        <span class="s1">spinner = NonInteractiveSpinner(message)</span>
+<a name="l142"><span class="ln">142  </span></a>    <span class="s0">try</span><span class="s1">:</span>
+<a name="l143"><span class="ln">143  </span></a>        <span class="s0">with </span><span class="s1">hidden_cursor(sys.stdout):</span>
+<a name="l144"><span class="ln">144  </span></a>            <span class="s0">yield </span><span class="s1">spinner</span>
+<a name="l145"><span class="ln">145  </span></a>    <span class="s0">except </span><span class="s1">KeyboardInterrupt:</span>
+<a name="l146"><span class="ln">146  </span></a>        <span class="s1">spinner.finish(</span><span class="s3">&quot;canceled&quot;</span><span class="s1">)</span>
+<a name="l147"><span class="ln">147  </span></a>        <span class="s0">raise</span>
+<a name="l148"><span class="ln">148  </span></a>    <span class="s0">except </span><span class="s1">Exception:</span>
+<a name="l149"><span class="ln">149  </span></a>        <span class="s1">spinner.finish(</span><span class="s3">&quot;error&quot;</span><span class="s1">)</span>
+<a name="l150"><span class="ln">150  </span></a>        <span class="s0">raise</span>
+<a name="l151"><span class="ln">151  </span></a>    <span class="s0">else</span><span class="s1">:</span>
+<a name="l152"><span class="ln">152  </span></a>        <span class="s1">spinner.finish(</span><span class="s3">&quot;done&quot;</span><span class="s1">)</span>
+<a name="l153"><span class="ln">153  </span></a>
+<a name="l154"><span class="ln">154  </span></a>
+<a name="l155"><span class="ln">155  </span></a><span class="s1">@contextlib.contextmanager</span>
+<a name="l156"><span class="ln">156  </span></a><span class="s0">def </span><span class="s1">hidden_cursor(file):</span>
+<a name="l157"><span class="ln">157  </span></a>    <span class="s2"># type: (IO[str]) -&gt; Iterator[None]</span>
+<a name="l158"><span class="ln">158  </span></a>    <span class="s2"># The Windows terminal does not support the hide/show cursor ANSI codes,</span>
+<a name="l159"><span class="ln">159  </span></a>    <span class="s2"># even via colorama. So don't even try.</span>
+<a name="l160"><span class="ln">160  </span></a>    <span class="s0">if </span><span class="s1">WINDOWS:</span>
+<a name="l161"><span class="ln">161  </span></a>        <span class="s0">yield</span>
+<a name="l162"><span class="ln">162  </span></a>    <span class="s2"># We don't want to clutter the output with control characters if we're</span>
+<a name="l163"><span class="ln">163  </span></a>    <span class="s2"># writing to a file, or if the user is running with --quiet.</span>
+<a name="l164"><span class="ln">164  </span></a>    <span class="s2"># See https://github.com/pypa/pip/issues/3418</span>
+<a name="l165"><span class="ln">165  </span></a>    <span class="s0">elif not </span><span class="s1">file.isatty() </span><span class="s0">or </span><span class="s1">logger.getEffectiveLevel() &gt; logging.INFO:</span>
+<a name="l166"><span class="ln">166  </span></a>        <span class="s0">yield</span>
+<a name="l167"><span class="ln">167  </span></a>    <span class="s0">else</span><span class="s1">:</span>
+<a name="l168"><span class="ln">168  </span></a>        <span class="s1">file.write(HIDE_CURSOR)</span>
+<a name="l169"><span class="ln">169  </span></a>        <span class="s0">try</span><span class="s1">:</span>
+<a name="l170"><span class="ln">170  </span></a>            <span class="s0">yield</span>
+<a name="l171"><span class="ln">171  </span></a>        <span class="s0">finally</span><span class="s1">:</span>
+<a name="l172"><span class="ln">172  </span></a>            <span class="s1">file.write(SHOW_CURSOR)</span>
+<a name="l173"><span class="ln">173  </span></a></pre>
+</body>
+</html>

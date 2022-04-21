@@ -1,0 +1,69 @@
+<html>
+<head>
+<title>version_test.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cc7832;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #6a8759;}
+.s3 { color: #6897bb;}
+.ln { color: #606366; font-weight: normal; font-style: normal; }
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+version_test.py</font>
+</center></td></tr></table>
+<pre><a name="l1"><span class="ln">1    </span></a><span class="s0">import </span><span class="s1">os</span>
+<a name="l2"><span class="ln">2    </span></a><span class="s0">import </span><span class="s1">unittest</span>
+<a name="l3"><span class="ln">3    </span></a>
+<a name="l4"><span class="ln">4    </span></a>
+<a name="l5"><span class="ln">5    </span></a><span class="s1">pg_header = os.path.join(</span><span class="s2">&quot;src_c&quot;</span><span class="s0">, </span><span class="s2">&quot;include&quot;</span><span class="s0">, </span><span class="s2">&quot;_pygame.h&quot;</span><span class="s1">)</span>
+<a name="l6"><span class="ln">6    </span></a>
+<a name="l7"><span class="ln">7    </span></a>
+<a name="l8"><span class="ln">8    </span></a><span class="s0">class </span><span class="s1">VersionTest(unittest.TestCase):</span>
+<a name="l9"><span class="ln">9    </span></a>    <span class="s1">@unittest.skipIf(</span>
+<a name="l10"><span class="ln">10   </span></a>        <span class="s0">not </span><span class="s1">os.path.isfile(pg_header)</span><span class="s0">, </span><span class="s2">&quot;Skipping because we cannot find _pygame.h&quot;</span>
+<a name="l11"><span class="ln">11   </span></a>    <span class="s1">)</span>
+<a name="l12"><span class="ln">12   </span></a>    <span class="s0">def </span><span class="s1">test_pg_version_consistency(self):</span>
+<a name="l13"><span class="ln">13   </span></a>        <span class="s0">from </span><span class="s1">pygame </span><span class="s0">import </span><span class="s1">version</span>
+<a name="l14"><span class="ln">14   </span></a>
+<a name="l15"><span class="ln">15   </span></a>        <span class="s1">pgh_major = -</span><span class="s3">1</span>
+<a name="l16"><span class="ln">16   </span></a>        <span class="s1">pgh_minor = -</span><span class="s3">1</span>
+<a name="l17"><span class="ln">17   </span></a>        <span class="s1">pgh_patch = -</span><span class="s3">1</span>
+<a name="l18"><span class="ln">18   </span></a>        <span class="s0">import </span><span class="s1">re</span>
+<a name="l19"><span class="ln">19   </span></a>
+<a name="l20"><span class="ln">20   </span></a>        <span class="s1">major_exp_search = re.compile(</span><span class="s2">r&quot;define\s+PG_MAJOR_VERSION\s+([0-9]+)&quot;</span><span class="s1">).search</span>
+<a name="l21"><span class="ln">21   </span></a>        <span class="s1">minor_exp_search = re.compile(</span><span class="s2">r&quot;define\s+PG_MINOR_VERSION\s+([0-9]+)&quot;</span><span class="s1">).search</span>
+<a name="l22"><span class="ln">22   </span></a>        <span class="s1">patch_exp_search = re.compile(</span><span class="s2">r&quot;define\s+PG_PATCH_VERSION\s+([0-9]+)&quot;</span><span class="s1">).search</span>
+<a name="l23"><span class="ln">23   </span></a>        <span class="s0">with </span><span class="s1">open(pg_header) </span><span class="s0">as </span><span class="s1">f:</span>
+<a name="l24"><span class="ln">24   </span></a>            <span class="s0">for </span><span class="s1">line </span><span class="s0">in </span><span class="s1">f:</span>
+<a name="l25"><span class="ln">25   </span></a>                <span class="s0">if </span><span class="s1">pgh_major == -</span><span class="s3">1</span><span class="s1">:</span>
+<a name="l26"><span class="ln">26   </span></a>                    <span class="s1">m = major_exp_search(line)</span>
+<a name="l27"><span class="ln">27   </span></a>                    <span class="s0">if </span><span class="s1">m:</span>
+<a name="l28"><span class="ln">28   </span></a>                        <span class="s1">pgh_major = int(m.group(</span><span class="s3">1</span><span class="s1">))</span>
+<a name="l29"><span class="ln">29   </span></a>                <span class="s0">if </span><span class="s1">pgh_minor == -</span><span class="s3">1</span><span class="s1">:</span>
+<a name="l30"><span class="ln">30   </span></a>                    <span class="s1">m = minor_exp_search(line)</span>
+<a name="l31"><span class="ln">31   </span></a>                    <span class="s0">if </span><span class="s1">m:</span>
+<a name="l32"><span class="ln">32   </span></a>                        <span class="s1">pgh_minor = int(m.group(</span><span class="s3">1</span><span class="s1">))</span>
+<a name="l33"><span class="ln">33   </span></a>                <span class="s0">if </span><span class="s1">pgh_patch == -</span><span class="s3">1</span><span class="s1">:</span>
+<a name="l34"><span class="ln">34   </span></a>                    <span class="s1">m = patch_exp_search(line)</span>
+<a name="l35"><span class="ln">35   </span></a>                    <span class="s0">if </span><span class="s1">m:</span>
+<a name="l36"><span class="ln">36   </span></a>                        <span class="s1">pgh_patch = int(m.group(</span><span class="s3">1</span><span class="s1">))</span>
+<a name="l37"><span class="ln">37   </span></a>        <span class="s1">self.assertEqual(pgh_major</span><span class="s0">, </span><span class="s1">version.vernum[</span><span class="s3">0</span><span class="s1">])</span>
+<a name="l38"><span class="ln">38   </span></a>        <span class="s1">self.assertEqual(pgh_minor</span><span class="s0">, </span><span class="s1">version.vernum[</span><span class="s3">1</span><span class="s1">])</span>
+<a name="l39"><span class="ln">39   </span></a>        <span class="s1">self.assertEqual(pgh_patch</span><span class="s0">, </span><span class="s1">version.vernum[</span><span class="s3">2</span><span class="s1">])</span>
+<a name="l40"><span class="ln">40   </span></a>
+<a name="l41"><span class="ln">41   </span></a>    <span class="s0">def </span><span class="s1">test_sdl_version(self):</span>
+<a name="l42"><span class="ln">42   </span></a>        <span class="s0">from </span><span class="s1">pygame </span><span class="s0">import </span><span class="s1">version</span>
+<a name="l43"><span class="ln">43   </span></a>
+<a name="l44"><span class="ln">44   </span></a>        <span class="s1">self.assertEqual(len(version.SDL)</span><span class="s0">, </span><span class="s3">3</span><span class="s1">)</span>
+<a name="l45"><span class="ln">45   </span></a>
+<a name="l46"><span class="ln">46   </span></a>
+<a name="l47"><span class="ln">47   </span></a><span class="s0">if </span><span class="s1">__name__ == </span><span class="s2">&quot;__main__&quot;</span><span class="s1">:</span>
+<a name="l48"><span class="ln">48   </span></a>    <span class="s1">unittest.main()</span>
+<a name="l49"><span class="ln">49   </span></a></pre>
+</body>
+</html>

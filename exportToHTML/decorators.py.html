@@ -1,0 +1,185 @@
+<html>
+<head>
+<title>decorators.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cc7832;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #629755; font-style: italic;}
+.s3 { color: #6a8759;}
+.s4 { color: #6897bb;}
+.s5 { color: #808080;}
+.ln { color: #606366; font-weight: normal; font-style: normal; }
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+decorators.py</font>
+</center></td></tr></table>
+<pre><a name="l1"><span class="ln">1    </span></a><span class="s0">from </span><span class="s1">decorator </span><span class="s0">import </span><span class="s1">FunctionMaker</span>
+<a name="l2"><span class="ln">2    </span></a><span class="s0">from </span><span class="s1">six </span><span class="s0">import </span><span class="s1">PY2</span><span class="s0">, </span><span class="s1">wraps</span>
+<a name="l3"><span class="ln">3    </span></a><span class="s0">if </span><span class="s1">PY2:</span>
+<a name="l4"><span class="ln">4    </span></a>    <span class="s0">from </span><span class="s1">funcsigs </span><span class="s0">import </span><span class="s1">signature</span><span class="s0">, </span><span class="s1">_empty</span>
+<a name="l5"><span class="ln">5    </span></a><span class="s0">else</span><span class="s1">:</span>
+<a name="l6"><span class="ln">6    </span></a>    <span class="s0">from </span><span class="s1">inspect </span><span class="s0">import </span><span class="s1">signature</span><span class="s0">, </span><span class="s1">_empty</span>
+<a name="l7"><span class="ln">7    </span></a>
+<a name="l8"><span class="ln">8    </span></a><span class="s0">from </span><span class="s1">. </span><span class="s0">import </span><span class="s1">Data</span>
+<a name="l9"><span class="ln">9    </span></a>
+<a name="l10"><span class="ln">10   </span></a>
+<a name="l11"><span class="ln">11   </span></a><span class="s0">def </span><span class="s1">annotate(*args</span><span class="s0">, </span><span class="s1">**kwargs):</span>
+<a name="l12"><span class="ln">12   </span></a>    <span class="s2">&quot;&quot;&quot;Set function annotations (on Python2 and 3).&quot;&quot;&quot;</span>
+<a name="l13"><span class="ln">13   </span></a>    <span class="s0">def </span><span class="s1">decorator(f):</span>
+<a name="l14"><span class="ln">14   </span></a>        <span class="s0">if not </span><span class="s1">hasattr(f</span><span class="s0">, </span><span class="s3">'__annotations__'</span><span class="s1">):</span>
+<a name="l15"><span class="ln">15   </span></a>            <span class="s1">f.__annotations__ = kwargs.copy()</span>
+<a name="l16"><span class="ln">16   </span></a>        <span class="s0">else</span><span class="s1">:</span>
+<a name="l17"><span class="ln">17   </span></a>            <span class="s1">f.__annotations__.update(kwargs)</span>
+<a name="l18"><span class="ln">18   </span></a>
+<a name="l19"><span class="ln">19   </span></a>        <span class="s0">if </span><span class="s1">args:</span>
+<a name="l20"><span class="ln">20   </span></a>            <span class="s0">if </span><span class="s1">len(args) != </span><span class="s4">1</span><span class="s1">:</span>
+<a name="l21"><span class="ln">21   </span></a>                <span class="s0">raise </span><span class="s1">ValueError(</span><span class="s3">'annotate supports only a single argument.'</span><span class="s1">)</span>
+<a name="l22"><span class="ln">22   </span></a>            <span class="s1">f.__annotations__[</span><span class="s3">'return'</span><span class="s1">] = args[</span><span class="s4">0</span><span class="s1">]</span>
+<a name="l23"><span class="ln">23   </span></a>        <span class="s0">return </span><span class="s1">f</span>
+<a name="l24"><span class="ln">24   </span></a>
+<a name="l25"><span class="ln">25   </span></a>    <span class="s0">return </span><span class="s1">decorator</span>
+<a name="l26"><span class="ln">26   </span></a>
+<a name="l27"><span class="ln">27   </span></a>
+<a name="l28"><span class="ln">28   </span></a><span class="s0">def </span><span class="s1">auto_instantiate(*classes):</span>
+<a name="l29"><span class="ln">29   </span></a>    <span class="s2">&quot;&quot;&quot;Creates a decorator that will instantiate objects based on function 
+<a name="l30"><span class="ln">30   </span></a>    parameter annotations. 
+<a name="l31"><span class="ln">31   </span></a> 
+<a name="l32"><span class="ln">32   </span></a>    The decorator will check every argument passed into ``f``. If ``f`` has an 
+<a name="l33"><span class="ln">33   </span></a>    annotation for the specified parameter and the annotation is found in 
+<a name="l34"><span class="ln">34   </span></a>    ``classes``, the parameter value passed in will be used to construct a new 
+<a name="l35"><span class="ln">35   </span></a>    instance of the expression that is the annotation. 
+<a name="l36"><span class="ln">36   </span></a> 
+<a name="l37"><span class="ln">37   </span></a>    An example (Python 3): 
+<a name="l38"><span class="ln">38   </span></a> 
+<a name="l39"><span class="ln">39   </span></a>    .. code-block:: python 
+<a name="l40"><span class="ln">40   </span></a> 
+<a name="l41"><span class="ln">41   </span></a>        @auto_instantiate(int) 
+<a name="l42"><span class="ln">42   </span></a>        def foo(a: int, b: float): 
+<a name="l43"><span class="ln">43   </span></a>            pass 
+<a name="l44"><span class="ln">44   </span></a> 
+<a name="l45"><span class="ln">45   </span></a>    Any value passed in as ``b`` is left unchanged. Anything passed as the 
+<a name="l46"><span class="ln">46   </span></a>    parameter for ``a`` will be converted to :class:`int` before calling the 
+<a name="l47"><span class="ln">47   </span></a>    function. 
+<a name="l48"><span class="ln">48   </span></a> 
+<a name="l49"><span class="ln">49   </span></a>    Since Python 2 does not support annotations, the 
+<a name="l50"><span class="ln">50   </span></a>    :func:`~data.decorators.annotate` function should can be used: 
+<a name="l51"><span class="ln">51   </span></a> 
+<a name="l52"><span class="ln">52   </span></a>    .. code-block:: python 
+<a name="l53"><span class="ln">53   </span></a> 
+<a name="l54"><span class="ln">54   </span></a>        @auto_instantiate(int) 
+<a name="l55"><span class="ln">55   </span></a>        @annotate(a=int) 
+<a name="l56"><span class="ln">56   </span></a>        def foo(a, b): 
+<a name="l57"><span class="ln">57   </span></a>            pass 
+<a name="l58"><span class="ln">58   </span></a> 
+<a name="l59"><span class="ln">59   </span></a> 
+<a name="l60"><span class="ln">60   </span></a>    :param classes: Any number of classes/callables for which 
+<a name="l61"><span class="ln">61   </span></a>                    auto-instantiation should be performed. If empty, perform 
+<a name="l62"><span class="ln">62   </span></a>                    for all. 
+<a name="l63"><span class="ln">63   </span></a> 
+<a name="l64"><span class="ln">64   </span></a>    :note: When dealing with data, it is almost always more convenient to use 
+<a name="l65"><span class="ln">65   </span></a>           the :func:`~data.decorators.data` decorator instead. 
+<a name="l66"><span class="ln">66   </span></a>    &quot;&quot;&quot;</span>
+<a name="l67"><span class="ln">67   </span></a>    <span class="s0">def </span><span class="s1">decorator(f):</span>
+<a name="l68"><span class="ln">68   </span></a>        <span class="s5"># collect our argspec</span>
+<a name="l69"><span class="ln">69   </span></a>        <span class="s1">sig = signature(f)</span>
+<a name="l70"><span class="ln">70   </span></a>
+<a name="l71"><span class="ln">71   </span></a>        <span class="s1">@wraps(f)</span>
+<a name="l72"><span class="ln">72   </span></a>        <span class="s0">def </span><span class="s1">_(*args</span><span class="s0">, </span><span class="s1">**kwargs):</span>
+<a name="l73"><span class="ln">73   </span></a>            <span class="s1">bvals = sig.bind(*args</span><span class="s0">, </span><span class="s1">**kwargs)</span>
+<a name="l74"><span class="ln">74   </span></a>
+<a name="l75"><span class="ln">75   </span></a>            <span class="s5"># replace with instance if desired</span>
+<a name="l76"><span class="ln">76   </span></a>            <span class="s0">for </span><span class="s1">varname</span><span class="s0">, </span><span class="s1">val </span><span class="s0">in </span><span class="s1">bvals.arguments.items():</span>
+<a name="l77"><span class="ln">77   </span></a>                <span class="s1">anno = sig.parameters[varname].annotation</span>
+<a name="l78"><span class="ln">78   </span></a>
+<a name="l79"><span class="ln">79   </span></a>                <span class="s0">if </span><span class="s1">anno </span><span class="s0">in </span><span class="s1">classes </span><span class="s0">or </span><span class="s1">(len(classes) == </span><span class="s4">0 </span><span class="s0">and </span><span class="s1">anno != _empty):</span>
+<a name="l80"><span class="ln">80   </span></a>                    <span class="s1">bvals.arguments[varname] = anno(val)</span>
+<a name="l81"><span class="ln">81   </span></a>
+<a name="l82"><span class="ln">82   </span></a>            <span class="s0">return </span><span class="s1">f(*bvals.args</span><span class="s0">, </span><span class="s1">**bvals.kwargs)</span>
+<a name="l83"><span class="ln">83   </span></a>
+<a name="l84"><span class="ln">84   </span></a>        <span class="s5"># create another layer by wrapping in a FunctionMaker. this is done</span>
+<a name="l85"><span class="ln">85   </span></a>        <span class="s5"># to preserve the original signature</span>
+<a name="l86"><span class="ln">86   </span></a>        <span class="s0">return </span><span class="s1">FunctionMaker.create(</span>
+<a name="l87"><span class="ln">87   </span></a>            <span class="s1">f</span><span class="s0">, </span><span class="s3">'return _(%(signature)s)'</span><span class="s0">, </span><span class="s1">dict(_=_</span><span class="s0">, </span><span class="s1">__wrapped__=f)</span>
+<a name="l88"><span class="ln">88   </span></a>        <span class="s1">)</span>
+<a name="l89"><span class="ln">89   </span></a>
+<a name="l90"><span class="ln">90   </span></a>    <span class="s0">return </span><span class="s1">decorator</span>
+<a name="l91"><span class="ln">91   </span></a>
+<a name="l92"><span class="ln">92   </span></a>
+<a name="l93"><span class="ln">93   </span></a><span class="s0">def </span><span class="s1">data(*argnames):</span>
+<a name="l94"><span class="ln">94   </span></a>    <span class="s2">&quot;&quot;&quot;Designate an argument as a :class:`~data.Data` argument. 
+<a name="l95"><span class="ln">95   </span></a> 
+<a name="l96"><span class="ln">96   </span></a>    Works by combining calls to :func:`~data.decorators.auto_instantiate` and 
+<a name="l97"><span class="ln">97   </span></a>    :func:~data.decorators.annotate` on the named arguments. 
+<a name="l98"><span class="ln">98   </span></a> 
+<a name="l99"><span class="ln">99   </span></a>    Example: 
+<a name="l100"><span class="ln">100  </span></a> 
+<a name="l101"><span class="ln">101  </span></a>    .. code-block:: python 
+<a name="l102"><span class="ln">102  </span></a> 
+<a name="l103"><span class="ln">103  </span></a>       class Foo(object): 
+<a name="l104"><span class="ln">104  </span></a>           @data('bar') 
+<a name="l105"><span class="ln">105  </span></a>           def meth(self, foo, bar): 
+<a name="l106"><span class="ln">106  </span></a>               pass 
+<a name="l107"><span class="ln">107  </span></a> 
+<a name="l108"><span class="ln">108  </span></a>    Inside ``meth``, ``bar`` will always be a :class:`~data.Data` instance 
+<a name="l109"><span class="ln">109  </span></a>    constructed from the original value passed as ``bar``. 
+<a name="l110"><span class="ln">110  </span></a> 
+<a name="l111"><span class="ln">111  </span></a>    :param argnames: List of parameter names that should be data arguments. 
+<a name="l112"><span class="ln">112  </span></a>    :return: A decorator that converts the named arguments to 
+<a name="l113"><span class="ln">113  </span></a>             :class:`~data.Data` instances.&quot;&quot;&quot;</span>
+<a name="l114"><span class="ln">114  </span></a>    <span class="s5"># make it work if given only one argument (for Python3)</span>
+<a name="l115"><span class="ln">115  </span></a>    <span class="s0">if </span><span class="s1">len(argnames) == </span><span class="s4">1 </span><span class="s0">and </span><span class="s1">callable(argnames[</span><span class="s4">0</span><span class="s1">]):</span>
+<a name="l116"><span class="ln">116  </span></a>        <span class="s0">return </span><span class="s1">data()(argnames[</span><span class="s4">0</span><span class="s1">])</span>
+<a name="l117"><span class="ln">117  </span></a>
+<a name="l118"><span class="ln">118  </span></a>    <span class="s0">def </span><span class="s1">decorator(f):</span>
+<a name="l119"><span class="ln">119  </span></a>        <span class="s1">f = annotate(**dict((argname</span><span class="s0">, </span><span class="s1">Data) </span><span class="s0">for </span><span class="s1">argname </span><span class="s0">in </span><span class="s1">argnames))(f)</span>
+<a name="l120"><span class="ln">120  </span></a>        <span class="s1">f = auto_instantiate(Data)(f)</span>
+<a name="l121"><span class="ln">121  </span></a>        <span class="s0">return </span><span class="s1">f</span>
+<a name="l122"><span class="ln">122  </span></a>    <span class="s0">return </span><span class="s1">decorator</span>
+<a name="l123"><span class="ln">123  </span></a>
+<a name="l124"><span class="ln">124  </span></a>
+<a name="l125"><span class="ln">125  </span></a><span class="s0">def </span><span class="s1">file_arg(argname</span><span class="s0">, </span><span class="s1">file_arg_suffix=</span><span class="s3">'_file'</span><span class="s1">):</span>
+<a name="l126"><span class="ln">126  </span></a>    <span class="s5"># this function is currently undocumented, as it's likely to be deemed a</span>
+<a name="l127"><span class="ln">127  </span></a>    <span class="s5"># bad idea and be removed later</span>
+<a name="l128"><span class="ln">128  </span></a>    <span class="s1">file_arg_name = argname + file_arg_suffix</span>
+<a name="l129"><span class="ln">129  </span></a>
+<a name="l130"><span class="ln">130  </span></a>    <span class="s0">def </span><span class="s1">decorator(f):</span>
+<a name="l131"><span class="ln">131  </span></a>        <span class="s1">sig = signature(f)</span>
+<a name="l132"><span class="ln">132  </span></a>
+<a name="l133"><span class="ln">133  </span></a>        <span class="s0">if </span><span class="s1">file_arg_name </span><span class="s0">in </span><span class="s1">sig.parameters:</span>
+<a name="l134"><span class="ln">134  </span></a>            <span class="s0">raise </span><span class="s1">ValueError(</span><span class="s3">'{} already has a parameter named {}'</span>
+<a name="l135"><span class="ln">135  </span></a>                             <span class="s1">.format(f</span><span class="s0">, </span><span class="s1">file_arg_name))</span>
+<a name="l136"><span class="ln">136  </span></a>
+<a name="l137"><span class="ln">137  </span></a>        <span class="s1">@wraps(f)</span>
+<a name="l138"><span class="ln">138  </span></a>        <span class="s0">def </span><span class="s1">_(*args</span><span class="s0">, </span><span class="s1">**kwargs):</span>
+<a name="l139"><span class="ln">139  </span></a>            <span class="s5"># remove file_arg_name from function list</span>
+<a name="l140"><span class="ln">140  </span></a>            <span class="s1">a_file = kwargs.pop(file_arg_name</span><span class="s0">, None</span><span class="s1">)</span>
+<a name="l141"><span class="ln">141  </span></a>
+<a name="l142"><span class="ln">142  </span></a>            <span class="s5"># bind remaining arguments</span>
+<a name="l143"><span class="ln">143  </span></a>            <span class="s1">pbargs = sig.bind_partial(*args</span><span class="s0">, </span><span class="s1">**kwargs)</span>
+<a name="l144"><span class="ln">144  </span></a>
+<a name="l145"><span class="ln">145  </span></a>            <span class="s5"># get data argument</span>
+<a name="l146"><span class="ln">146  </span></a>            <span class="s1">a_data = pbargs.arguments.get(argname</span><span class="s0">, None</span><span class="s1">)</span>
+<a name="l147"><span class="ln">147  </span></a>
+<a name="l148"><span class="ln">148  </span></a>            <span class="s5"># if a Data object is already being passed in, use it</span>
+<a name="l149"><span class="ln">149  </span></a>            <span class="s5"># instead of creating a new instance</span>
+<a name="l150"><span class="ln">150  </span></a>            <span class="s0">if </span><span class="s1">a_file </span><span class="s0">is None and </span><span class="s1">isinstance(a_data</span><span class="s0">, </span><span class="s1">Data):</span>
+<a name="l151"><span class="ln">151  </span></a>                <span class="s1">d = a_data</span>
+<a name="l152"><span class="ln">152  </span></a>            <span class="s0">else</span><span class="s1">:</span>
+<a name="l153"><span class="ln">153  </span></a>                <span class="s5"># create data replacement</span>
+<a name="l154"><span class="ln">154  </span></a>                <span class="s1">d = Data(data=a_data</span><span class="s0">, </span><span class="s1">file=a_file)</span>
+<a name="l155"><span class="ln">155  </span></a>
+<a name="l156"><span class="ln">156  </span></a>            <span class="s5"># replace with data instance</span>
+<a name="l157"><span class="ln">157  </span></a>            <span class="s1">pbargs.parameters[argname] = d</span>
+<a name="l158"><span class="ln">158  </span></a>
+<a name="l159"><span class="ln">159  </span></a>            <span class="s5"># call original function with instantiated data argument</span>
+<a name="l160"><span class="ln">160  </span></a>            <span class="s0">return </span><span class="s1">f(*pbargs.args</span><span class="s0">, </span><span class="s1">**pbargs.kwargs)</span>
+<a name="l161"><span class="ln">161  </span></a>        <span class="s0">return </span><span class="s1">_</span>
+<a name="l162"><span class="ln">162  </span></a>    <span class="s0">return </span><span class="s1">decorator</span>
+<a name="l163"><span class="ln">163  </span></a></pre>
+</body>
+</html>

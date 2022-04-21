@@ -1,0 +1,90 @@
+<html>
+<head>
+<title>setmodescale.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #808080;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #629755; font-style: italic;}
+.s3 { color: #cc7832;}
+.s4 { color: #6897bb;}
+.s5 { color: #6a8759;}
+.ln { color: #606366; font-weight: normal; font-style: normal; }
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+setmodescale.py</font>
+</center></td></tr></table>
+<pre><a name="l1"><span class="ln">1    </span></a><span class="s0">#!/usr/bin/env python</span>
+<a name="l2"><span class="ln">2    </span></a><span class="s2">&quot;&quot;&quot; pygame.examples.setmodescale 
+<a name="l3"><span class="ln">3    </span></a> 
+<a name="l4"><span class="ln">4    </span></a>On high resolution displays(4k, 1080p) and tiny graphics games (640x480) 
+<a name="l5"><span class="ln">5    </span></a>show up very small so that they are unplayable. SCALED scales up the window 
+<a name="l6"><span class="ln">6    </span></a>for you. The game thinks it's a 640x480 window, but really it can be bigger. 
+<a name="l7"><span class="ln">7    </span></a>Mouse events are scaled for you, so your game doesn't need to do it. 
+<a name="l8"><span class="ln">8    </span></a> 
+<a name="l9"><span class="ln">9    </span></a>Passing SCALED to pygame.display.set_mode means the resolution depends 
+<a name="l10"><span class="ln">10   </span></a>on desktop size and the graphics are scaled. 
+<a name="l11"><span class="ln">11   </span></a>&quot;&quot;&quot;</span>
+<a name="l12"><span class="ln">12   </span></a>
+<a name="l13"><span class="ln">13   </span></a><span class="s3">import </span><span class="s1">pygame </span><span class="s3">as </span><span class="s1">pg</span>
+<a name="l14"><span class="ln">14   </span></a>
+<a name="l15"><span class="ln">15   </span></a><span class="s1">pg.init()</span>
+<a name="l16"><span class="ln">16   </span></a>
+<a name="l17"><span class="ln">17   </span></a><span class="s1">RES = (</span><span class="s4">160</span><span class="s3">, </span><span class="s4">120</span><span class="s1">)</span>
+<a name="l18"><span class="ln">18   </span></a><span class="s1">FPS = </span><span class="s4">30</span>
+<a name="l19"><span class="ln">19   </span></a><span class="s1">clock = pg.time.Clock()</span>
+<a name="l20"><span class="ln">20   </span></a>
+<a name="l21"><span class="ln">21   </span></a><span class="s1">print(</span><span class="s5">&quot;desktops&quot;</span><span class="s3">, </span><span class="s1">pg.display.get_desktop_sizes())</span>
+<a name="l22"><span class="ln">22   </span></a><span class="s1">screen = pg.display.set_mode(RES</span><span class="s3">, </span><span class="s1">pg.SCALED | pg.RESIZABLE)</span>
+<a name="l23"><span class="ln">23   </span></a>
+<a name="l24"><span class="ln">24   </span></a><span class="s0"># MAIN LOOP</span>
+<a name="l25"><span class="ln">25   </span></a>
+<a name="l26"><span class="ln">26   </span></a><span class="s1">done = </span><span class="s3">False</span>
+<a name="l27"><span class="ln">27   </span></a>
+<a name="l28"><span class="ln">28   </span></a><span class="s1">i = </span><span class="s4">0</span>
+<a name="l29"><span class="ln">29   </span></a><span class="s1">j = </span><span class="s4">0</span>
+<a name="l30"><span class="ln">30   </span></a>
+<a name="l31"><span class="ln">31   </span></a><span class="s1">r_name</span><span class="s3">, </span><span class="s1">r_flags = pg.display._get_renderer_info()</span>
+<a name="l32"><span class="ln">32   </span></a><span class="s1">print(</span><span class="s5">&quot;renderer:&quot;</span><span class="s3">, </span><span class="s1">r_name</span><span class="s3">, </span><span class="s5">&quot;flags:&quot;</span><span class="s3">, </span><span class="s1">bin(r_flags))</span>
+<a name="l33"><span class="ln">33   </span></a><span class="s3">for </span><span class="s1">flag</span><span class="s3">, </span><span class="s1">name </span><span class="s3">in </span><span class="s1">[</span>
+<a name="l34"><span class="ln">34   </span></a>    <span class="s1">(</span><span class="s4">1</span><span class="s3">, </span><span class="s5">&quot;software&quot;</span><span class="s1">)</span><span class="s3">,</span>
+<a name="l35"><span class="ln">35   </span></a>    <span class="s1">(</span><span class="s4">2</span><span class="s3">, </span><span class="s5">&quot;accelerated&quot;</span><span class="s1">)</span><span class="s3">,</span>
+<a name="l36"><span class="ln">36   </span></a>    <span class="s1">(</span><span class="s4">4</span><span class="s3">, </span><span class="s5">&quot;VSync&quot;</span><span class="s1">)</span><span class="s3">,</span>
+<a name="l37"><span class="ln">37   </span></a>    <span class="s1">(</span><span class="s4">8</span><span class="s3">, </span><span class="s5">&quot;render to texture&quot;</span><span class="s1">)</span><span class="s3">,</span>
+<a name="l38"><span class="ln">38   </span></a><span class="s1">]:</span>
+<a name="l39"><span class="ln">39   </span></a>    <span class="s3">if </span><span class="s1">flag &amp; r_flags:</span>
+<a name="l40"><span class="ln">40   </span></a>        <span class="s1">print(name)</span>
+<a name="l41"><span class="ln">41   </span></a>
+<a name="l42"><span class="ln">42   </span></a><span class="s3">while not </span><span class="s1">done:</span>
+<a name="l43"><span class="ln">43   </span></a>    <span class="s3">for </span><span class="s1">event </span><span class="s3">in </span><span class="s1">pg.event.get():</span>
+<a name="l44"><span class="ln">44   </span></a>        <span class="s3">if </span><span class="s1">event.type == pg.KEYDOWN </span><span class="s3">and </span><span class="s1">event.key == pg.K_q:</span>
+<a name="l45"><span class="ln">45   </span></a>            <span class="s1">done = </span><span class="s3">True</span>
+<a name="l46"><span class="ln">46   </span></a>        <span class="s3">if </span><span class="s1">event.type == pg.QUIT:</span>
+<a name="l47"><span class="ln">47   </span></a>            <span class="s1">done = </span><span class="s3">True</span>
+<a name="l48"><span class="ln">48   </span></a>        <span class="s3">if </span><span class="s1">event.type == pg.KEYDOWN </span><span class="s3">and </span><span class="s1">event.key == pg.K_f:</span>
+<a name="l49"><span class="ln">49   </span></a>            <span class="s1">pg.display.toggle_fullscreen()</span>
+<a name="l50"><span class="ln">50   </span></a>        <span class="s3">if </span><span class="s1">event.type == pg.VIDEORESIZE:</span>
+<a name="l51"><span class="ln">51   </span></a>            <span class="s1">pg.display._resize_event(event)</span>
+<a name="l52"><span class="ln">52   </span></a>
+<a name="l53"><span class="ln">53   </span></a>    <span class="s1">i += </span><span class="s4">1</span>
+<a name="l54"><span class="ln">54   </span></a>    <span class="s1">i = i % screen.get_width()</span>
+<a name="l55"><span class="ln">55   </span></a>    <span class="s1">j += i % </span><span class="s4">2</span>
+<a name="l56"><span class="ln">56   </span></a>    <span class="s1">j = j % screen.get_height()</span>
+<a name="l57"><span class="ln">57   </span></a>
+<a name="l58"><span class="ln">58   </span></a>    <span class="s1">screen.fill((</span><span class="s4">255</span><span class="s3">, </span><span class="s4">0</span><span class="s3">, </span><span class="s4">255</span><span class="s1">))</span>
+<a name="l59"><span class="ln">59   </span></a>    <span class="s1">pg.draw.circle(screen</span><span class="s3">, </span><span class="s1">(</span><span class="s4">0</span><span class="s3">, </span><span class="s4">0</span><span class="s3">, </span><span class="s4">0</span><span class="s1">)</span><span class="s3">, </span><span class="s1">(</span><span class="s4">100</span><span class="s3">, </span><span class="s4">100</span><span class="s1">)</span><span class="s3">, </span><span class="s4">20</span><span class="s1">)</span>
+<a name="l60"><span class="ln">60   </span></a>    <span class="s1">pg.draw.circle(screen</span><span class="s3">, </span><span class="s1">(</span><span class="s4">0</span><span class="s3">, </span><span class="s4">0</span><span class="s3">, </span><span class="s4">200</span><span class="s1">)</span><span class="s3">, </span><span class="s1">(</span><span class="s4">0</span><span class="s3">, </span><span class="s4">0</span><span class="s1">)</span><span class="s3">, </span><span class="s4">10</span><span class="s1">)</span>
+<a name="l61"><span class="ln">61   </span></a>    <span class="s1">pg.draw.circle(screen</span><span class="s3">, </span><span class="s1">(</span><span class="s4">200</span><span class="s3">, </span><span class="s4">0</span><span class="s3">, </span><span class="s4">0</span><span class="s1">)</span><span class="s3">, </span><span class="s1">(</span><span class="s4">160</span><span class="s3">, </span><span class="s4">120</span><span class="s1">)</span><span class="s3">, </span><span class="s4">30</span><span class="s1">)</span>
+<a name="l62"><span class="ln">62   </span></a>    <span class="s1">pg.draw.line(screen</span><span class="s3">, </span><span class="s1">(</span><span class="s4">250</span><span class="s3">, </span><span class="s4">250</span><span class="s3">, </span><span class="s4">0</span><span class="s1">)</span><span class="s3">, </span><span class="s1">(</span><span class="s4">0</span><span class="s3">, </span><span class="s4">120</span><span class="s1">)</span><span class="s3">, </span><span class="s1">(</span><span class="s4">160</span><span class="s3">, </span><span class="s4">0</span><span class="s1">))</span>
+<a name="l63"><span class="ln">63   </span></a>    <span class="s1">pg.draw.circle(screen</span><span class="s3">, </span><span class="s1">(</span><span class="s4">255</span><span class="s3">, </span><span class="s4">255</span><span class="s3">, </span><span class="s4">255</span><span class="s1">)</span><span class="s3">, </span><span class="s1">(i</span><span class="s3">, </span><span class="s1">j)</span><span class="s3">, </span><span class="s4">5</span><span class="s1">)</span>
+<a name="l64"><span class="ln">64   </span></a>
+<a name="l65"><span class="ln">65   </span></a>    <span class="s1">pg.display.flip()</span>
+<a name="l66"><span class="ln">66   </span></a>    <span class="s1">clock.tick(FPS)</span>
+<a name="l67"><span class="ln">67   </span></a><span class="s1">pg.quit()</span>
+<a name="l68"><span class="ln">68   </span></a></pre>
+</body>
+</html>

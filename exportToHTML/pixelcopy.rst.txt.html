@@ -1,0 +1,122 @@
+<html>
+<head>
+<title>pixelcopy.rst.txt</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #a9b7c6;}
+.ln { color: #606366; font-weight: normal; font-style: normal; }
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+pixelcopy.rst.txt</font>
+</center></td></tr></table>
+<pre><a name="l1"><span class="ln">1    </span></a><span class="s0">.. include:: common.txt</span>
+<a name="l2"><span class="ln">2    </span></a>
+<a name="l3"><span class="ln">3    </span></a><span class="s0">:mod:`pygame.pixelcopy`</span>
+<a name="l4"><span class="ln">4    </span></a><span class="s0">=======================</span>
+<a name="l5"><span class="ln">5    </span></a>
+<a name="l6"><span class="ln">6    </span></a><span class="s0">.. module:: pygame.pixelcopy</span>
+<a name="l7"><span class="ln">7    </span></a>   <span class="s0">:synopsis: pygame module for general pixel array copying</span>
+<a name="l8"><span class="ln">8    </span></a>
+<a name="l9"><span class="ln">9    </span></a><span class="s0">| :sl:`pygame module for general pixel array copying`</span>
+<a name="l10"><span class="ln">10   </span></a>
+<a name="l11"><span class="ln">11   </span></a><span class="s0">The ``pygame.pixelcopy`` module contains functions for copying between</span>
+<a name="l12"><span class="ln">12   </span></a><span class="s0">surfaces and objects exporting an array structure interface. It is a backend</span>
+<a name="l13"><span class="ln">13   </span></a><span class="s0">for :mod:`pygame.surfarray`, adding NumPy support. But pixelcopy is more</span>
+<a name="l14"><span class="ln">14   </span></a><span class="s0">general, and intended for direct use.</span>
+<a name="l15"><span class="ln">15   </span></a>
+<a name="l16"><span class="ln">16   </span></a><span class="s0">The array struct interface exposes an array's data in a standard way.</span>
+<a name="l17"><span class="ln">17   </span></a><span class="s0">It was introduced in NumPy. In Python 2.7 and above it is replaced by the</span>
+<a name="l18"><span class="ln">18   </span></a><span class="s0">new buffer protocol, though the buffer protocol is still a work in progress.</span>
+<a name="l19"><span class="ln">19   </span></a><span class="s0">The array struct interface, on the other hand, is stable and works with earlier</span>
+<a name="l20"><span class="ln">20   </span></a><span class="s0">Python versions. So for now the array struct interface is the predominate way</span>
+<a name="l21"><span class="ln">21   </span></a><span class="s0">pygame handles array introspection.</span>
+<a name="l22"><span class="ln">22   </span></a>
+<a name="l23"><span class="ln">23   </span></a><span class="s0">For 2d arrays of integer pixel values, the values are mapped to the</span>
+<a name="l24"><span class="ln">24   </span></a><span class="s0">pixel format of the related surface. To get the actual color of a pixel</span>
+<a name="l25"><span class="ln">25   </span></a><span class="s0">value use :meth:`pygame.Surface.unmap_rgb`. 2d arrays can only be used</span>
+<a name="l26"><span class="ln">26   </span></a><span class="s0">directly between surfaces having the same pixel layout.</span>
+<a name="l27"><span class="ln">27   </span></a>
+<a name="l28"><span class="ln">28   </span></a><span class="s0">New in pygame 1.9.2.</span>
+<a name="l29"><span class="ln">29   </span></a>
+<a name="l30"><span class="ln">30   </span></a><span class="s0">.. function:: surface_to_array</span>
+<a name="l31"><span class="ln">31   </span></a>
+<a name="l32"><span class="ln">32   </span></a>   <span class="s0">| :sl:`copy surface pixels to an array object`</span>
+<a name="l33"><span class="ln">33   </span></a>   <span class="s0">| :sg:`surface_to_array(array, surface, kind='P', opaque=255, clear=0) -&gt; None`</span>
+<a name="l34"><span class="ln">34   </span></a>
+<a name="l35"><span class="ln">35   </span></a>   <span class="s0">The surface_to_array function copies pixels from a Surface object</span>
+<a name="l36"><span class="ln">36   </span></a>   <span class="s0">to a 2D or 3D array. Depending on argument ``kind`` and the target array</span>
+<a name="l37"><span class="ln">37   </span></a>   <span class="s0">dimension, a copy may be raw pixel value, RGB, a color component slice,</span>
+<a name="l38"><span class="ln">38   </span></a>   <span class="s0">or colorkey alpha transparency value. Recognized ``kind`` values are the</span>
+<a name="l39"><span class="ln">39   </span></a>   <span class="s0">single character codes 'P', 'R', 'G', 'B', 'A', and 'C'. Kind codes are case</span>
+<a name="l40"><span class="ln">40   </span></a>   <span class="s0">insensitive, so 'p' is equivalent to 'P'. The first two dimensions</span>
+<a name="l41"><span class="ln">41   </span></a>   <span class="s0">of the target must be the surface size (w, h).</span>
+<a name="l42"><span class="ln">42   </span></a>
+<a name="l43"><span class="ln">43   </span></a>   <span class="s0">The default 'P' kind code does a direct raw integer pixel (mapped) value</span>
+<a name="l44"><span class="ln">44   </span></a>   <span class="s0">copy to a 2D array and a 'RGB' pixel component (unmapped) copy to a 3D array</span>
+<a name="l45"><span class="ln">45   </span></a>   <span class="s0">having shape (w, h, 3). For an 8 bit colormap surface this means the</span>
+<a name="l46"><span class="ln">46   </span></a>   <span class="s0">table index is copied to a 2D array, not the table value itself. A 2D</span>
+<a name="l47"><span class="ln">47   </span></a>   <span class="s0">array's item size must be at least as large as the surface's pixel</span>
+<a name="l48"><span class="ln">48   </span></a>   <span class="s0">byte size. The item size of a 3D array must be at least one byte.</span>
+<a name="l49"><span class="ln">49   </span></a>
+<a name="l50"><span class="ln">50   </span></a>   <span class="s0">For the 'R', 'G', 'B', and 'A' copy kinds a single color component</span>
+<a name="l51"><span class="ln">51   </span></a>   <span class="s0">of the unmapped surface pixels are copied to the target 2D array.</span>
+<a name="l52"><span class="ln">52   </span></a>   <span class="s0">For kind 'A' and surfaces with source alpha (the surface was created with</span>
+<a name="l53"><span class="ln">53   </span></a>   <span class="s0">the SRCALPHA flag), has a colorkey</span>
+<a name="l54"><span class="ln">54   </span></a>   <span class="s0">(set with :meth:`Surface.set_colorkey() &lt;pygame.Surface.set_colorkey&gt;`),</span>
+<a name="l55"><span class="ln">55   </span></a>   <span class="s0">or has a blanket alpha</span>
+<a name="l56"><span class="ln">56   </span></a>   <span class="s0">(set with :meth:`Surface.set_alpha() &lt;pygame.Surface.set_alpha&gt;`)</span>
+<a name="l57"><span class="ln">57   </span></a>   <span class="s0">then the alpha values are those expected for a SDL surface.</span>
+<a name="l58"><span class="ln">58   </span></a>   <span class="s0">If a surface has no explicit alpha value, then the target array</span>
+<a name="l59"><span class="ln">59   </span></a>   <span class="s0">is filled with the value of the optional ``opaque`` surface_to_array</span>
+<a name="l60"><span class="ln">60   </span></a>   <span class="s0">argument (default 255: not transparent).</span>
+<a name="l61"><span class="ln">61   </span></a>
+<a name="l62"><span class="ln">62   </span></a>   <span class="s0">Copy kind 'C' is a special case for alpha copy of a source surface</span>
+<a name="l63"><span class="ln">63   </span></a>   <span class="s0">with colorkey. Unlike the 'A' color component copy, the ``clear``</span>
+<a name="l64"><span class="ln">64   </span></a>   <span class="s0">argument value is used for colorkey matches, ``opaque`` otherwise.</span>
+<a name="l65"><span class="ln">65   </span></a>   <span class="s0">By default, a match has alpha 0 (totally transparent), while everything</span>
+<a name="l66"><span class="ln">66   </span></a>   <span class="s0">else is alpha 255 (totally opaque). It is a more general implementation</span>
+<a name="l67"><span class="ln">67   </span></a>   <span class="s0">of :meth:`pygame.surfarray.array_colorkey`.</span>
+<a name="l68"><span class="ln">68   </span></a>
+<a name="l69"><span class="ln">69   </span></a>   <span class="s0">Specific to surface_to_array, a ValueError is raised for target arrays</span>
+<a name="l70"><span class="ln">70   </span></a>   <span class="s0">with incorrect shape or item size. A TypeError is raised for an incorrect</span>
+<a name="l71"><span class="ln">71   </span></a>   <span class="s0">kind code. Surface specific problems, such as locking, raise a pygame.error.</span>
+<a name="l72"><span class="ln">72   </span></a>
+<a name="l73"><span class="ln">73   </span></a>   <span class="s0">.. ## pygame.pixelcopy.surface_to_array ##</span>
+<a name="l74"><span class="ln">74   </span></a>
+<a name="l75"><span class="ln">75   </span></a><span class="s0">.. function:: array_to_surface</span>
+<a name="l76"><span class="ln">76   </span></a>
+<a name="l77"><span class="ln">77   </span></a>   <span class="s0">| :sl:`copy an array object to a surface`</span>
+<a name="l78"><span class="ln">78   </span></a>   <span class="s0">| :sg:`array_to_surface(&lt;surface&gt;, &lt;array&gt;) -&gt; None`</span>
+<a name="l79"><span class="ln">79   </span></a>
+<a name="l80"><span class="ln">80   </span></a>   <span class="s0">See :func:`pygame.surfarray.blit_array`.</span>
+<a name="l81"><span class="ln">81   </span></a>
+<a name="l82"><span class="ln">82   </span></a>   <span class="s0">.. ## pygame.pixelcopy.array_to_surface ##</span>
+<a name="l83"><span class="ln">83   </span></a>
+<a name="l84"><span class="ln">84   </span></a><span class="s0">.. function:: map_array</span>
+<a name="l85"><span class="ln">85   </span></a>
+<a name="l86"><span class="ln">86   </span></a>   <span class="s0">| :sl:`copy an array to another array, using surface format`</span>
+<a name="l87"><span class="ln">87   </span></a>   <span class="s0">| :sg:`map_array(&lt;array&gt;, &lt;array&gt;, &lt;surface&gt;) -&gt; None`</span>
+<a name="l88"><span class="ln">88   </span></a>
+<a name="l89"><span class="ln">89   </span></a>   <span class="s0">Map an array of color element values - (w, h, ..., 3) - to an array of</span>
+<a name="l90"><span class="ln">90   </span></a>   <span class="s0">pixels - (w, h) according to the format of &lt;surface&gt;.</span>
+<a name="l91"><span class="ln">91   </span></a>
+<a name="l92"><span class="ln">92   </span></a>   <span class="s0">.. ## pygame.pixelcopy.map_array ##</span>
+<a name="l93"><span class="ln">93   </span></a>
+<a name="l94"><span class="ln">94   </span></a><span class="s0">.. function:: make_surface</span>
+<a name="l95"><span class="ln">95   </span></a>
+<a name="l96"><span class="ln">96   </span></a>   <span class="s0">| :sl:`Copy an array to a new surface`</span>
+<a name="l97"><span class="ln">97   </span></a>   <span class="s0">| :sg:`pygame.pixelcopy.make_surface(array) -&gt; Surface`</span>
+<a name="l98"><span class="ln">98   </span></a>
+<a name="l99"><span class="ln">99   </span></a>   <span class="s0">Create a new Surface that best resembles the data and format of the array.</span>
+<a name="l100"><span class="ln">100  </span></a>   <span class="s0">The array can be 2D or 3D with any sized integer values.</span>
+<a name="l101"><span class="ln">101  </span></a>
+<a name="l102"><span class="ln">102  </span></a>   <span class="s0">.. ## pygame.pixelcopy.make_surface ##</span>
+<a name="l103"><span class="ln">103  </span></a>
+<a name="l104"><span class="ln">104  </span></a><span class="s0">.. ## pygame.pixelcopy ##</span>
+<a name="l105"><span class="ln">105  </span></a></pre>
+</body>
+</html>

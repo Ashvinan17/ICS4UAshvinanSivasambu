@@ -1,0 +1,502 @@
+<html>
+<head>
+<title>midi.rst.txt</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #a9b7c6;}
+.ln { color: #606366; font-weight: normal; font-style: normal; }
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+midi.rst.txt</font>
+</center></td></tr></table>
+<pre><a name="l1"><span class="ln">1    </span></a><span class="s0">.. include:: common.txt</span>
+<a name="l2"><span class="ln">2    </span></a>
+<a name="l3"><span class="ln">3    </span></a><span class="s0">:mod:`pygame.midi`</span>
+<a name="l4"><span class="ln">4    </span></a><span class="s0">==================</span>
+<a name="l5"><span class="ln">5    </span></a>
+<a name="l6"><span class="ln">6    </span></a><span class="s0">.. module:: pygame.midi</span>
+<a name="l7"><span class="ln">7    </span></a>   <span class="s0">:synopsis: pygame module for interacting with midi input and output.</span>
+<a name="l8"><span class="ln">8    </span></a>
+<a name="l9"><span class="ln">9    </span></a><span class="s0">| :sl:`pygame module for interacting with midi input and output.`</span>
+<a name="l10"><span class="ln">10   </span></a>
+<a name="l11"><span class="ln">11   </span></a><span class="s0">.. versionadded:: 1.9.0</span>
+<a name="l12"><span class="ln">12   </span></a>
+<a name="l13"><span class="ln">13   </span></a><span class="s0">The midi module can send output to midi devices and get input from midi</span>
+<a name="l14"><span class="ln">14   </span></a><span class="s0">devices. It can also list midi devices on the system.</span>
+<a name="l15"><span class="ln">15   </span></a>
+<a name="l16"><span class="ln">16   </span></a><span class="s0">The midi module supports real and virtual midi devices.</span>
+<a name="l17"><span class="ln">17   </span></a>
+<a name="l18"><span class="ln">18   </span></a><span class="s0">It uses the portmidi library. Is portable to which ever platforms portmidi</span>
+<a name="l19"><span class="ln">19   </span></a><span class="s0">supports (currently Windows, Mac OS X, and Linux).</span>
+<a name="l20"><span class="ln">20   </span></a>
+<a name="l21"><span class="ln">21   </span></a><span class="s0">This uses pyportmidi for now, but may use its own bindings at some point in the</span>
+<a name="l22"><span class="ln">22   </span></a><span class="s0">future. The pyportmidi bindings are included with pygame.</span>
+<a name="l23"><span class="ln">23   </span></a>
+<a name="l24"><span class="ln">24   </span></a><span class="s0">|</span>
+<a name="l25"><span class="ln">25   </span></a>
+<a name="l26"><span class="ln">26   </span></a><span class="s0">.. versionadded:: 2.0.0</span>
+<a name="l27"><span class="ln">27   </span></a>
+<a name="l28"><span class="ln">28   </span></a><span class="s0">These are pygame events (:mod:`pygame.event`) reserved for midi use. The</span>
+<a name="l29"><span class="ln">29   </span></a><span class="s0">``MIDIIN`` event is used by :func:`pygame.midi.midis2events` when converting</span>
+<a name="l30"><span class="ln">30   </span></a><span class="s0">midi events to pygame events.</span>
+<a name="l31"><span class="ln">31   </span></a>
+<a name="l32"><span class="ln">32   </span></a><span class="s0">::</span>
+<a name="l33"><span class="ln">33   </span></a>
+<a name="l34"><span class="ln">34   </span></a>   <span class="s0">MIDIIN</span>
+<a name="l35"><span class="ln">35   </span></a>   <span class="s0">MIDIOUT</span>
+<a name="l36"><span class="ln">36   </span></a>
+<a name="l37"><span class="ln">37   </span></a><span class="s0">|</span>
+<a name="l38"><span class="ln">38   </span></a>
+<a name="l39"><span class="ln">39   </span></a><span class="s0">.. function:: init</span>
+<a name="l40"><span class="ln">40   </span></a>
+<a name="l41"><span class="ln">41   </span></a>   <span class="s0">| :sl:`initialize the midi module`</span>
+<a name="l42"><span class="ln">42   </span></a>   <span class="s0">| :sg:`init() -&gt; None`</span>
+<a name="l43"><span class="ln">43   </span></a>
+<a name="l44"><span class="ln">44   </span></a>   <span class="s0">Initializes the :mod:`pygame.midi` module. Must be called before using the</span>
+<a name="l45"><span class="ln">45   </span></a>   <span class="s0">:mod:`pygame.midi` module.</span>
+<a name="l46"><span class="ln">46   </span></a>
+<a name="l47"><span class="ln">47   </span></a>   <span class="s0">It is safe to call this more than once.</span>
+<a name="l48"><span class="ln">48   </span></a>
+<a name="l49"><span class="ln">49   </span></a>   <span class="s0">.. ## pygame.midi.init ##</span>
+<a name="l50"><span class="ln">50   </span></a>
+<a name="l51"><span class="ln">51   </span></a><span class="s0">.. function:: quit</span>
+<a name="l52"><span class="ln">52   </span></a>
+<a name="l53"><span class="ln">53   </span></a>   <span class="s0">| :sl:`uninitialize the midi module`</span>
+<a name="l54"><span class="ln">54   </span></a>   <span class="s0">| :sg:`quit() -&gt; None`</span>
+<a name="l55"><span class="ln">55   </span></a>
+<a name="l56"><span class="ln">56   </span></a>   <span class="s0">Uninitializes the :mod:`pygame.midi` module. If :func:`pygame.midi.init` was</span>
+<a name="l57"><span class="ln">57   </span></a>   <span class="s0">called to initialize the :mod:`pygame.midi` module, then this function will</span>
+<a name="l58"><span class="ln">58   </span></a>   <span class="s0">be called automatically when your program exits.</span>
+<a name="l59"><span class="ln">59   </span></a>
+<a name="l60"><span class="ln">60   </span></a>   <span class="s0">It is safe to call this function more than once.</span>
+<a name="l61"><span class="ln">61   </span></a>
+<a name="l62"><span class="ln">62   </span></a>   <span class="s0">.. ## pygame.midi.quit ##</span>
+<a name="l63"><span class="ln">63   </span></a>
+<a name="l64"><span class="ln">64   </span></a><span class="s0">.. function:: get_init</span>
+<a name="l65"><span class="ln">65   </span></a>
+<a name="l66"><span class="ln">66   </span></a>   <span class="s0">| :sl:`returns True if the midi module is currently initialized`</span>
+<a name="l67"><span class="ln">67   </span></a>   <span class="s0">| :sg:`get_init() -&gt; bool`</span>
+<a name="l68"><span class="ln">68   </span></a>
+<a name="l69"><span class="ln">69   </span></a>   <span class="s0">Gets the initialization state of the :mod:`pygame.midi` module.</span>
+<a name="l70"><span class="ln">70   </span></a>
+<a name="l71"><span class="ln">71   </span></a>   <span class="s0">:returns: ``True`` if the :mod:`pygame.midi` module is currently initialized.</span>
+<a name="l72"><span class="ln">72   </span></a>   <span class="s0">:rtype: bool</span>
+<a name="l73"><span class="ln">73   </span></a>
+<a name="l74"><span class="ln">74   </span></a>   <span class="s0">.. versionadded:: 1.9.5</span>
+<a name="l75"><span class="ln">75   </span></a>
+<a name="l76"><span class="ln">76   </span></a>   <span class="s0">.. ## pygame.midi.get_init ##</span>
+<a name="l77"><span class="ln">77   </span></a>
+<a name="l78"><span class="ln">78   </span></a><span class="s0">.. class:: Input</span>
+<a name="l79"><span class="ln">79   </span></a>
+<a name="l80"><span class="ln">80   </span></a>   <span class="s0">| :sl:`Input is used to get midi input from midi devices.`</span>
+<a name="l81"><span class="ln">81   </span></a>   <span class="s0">| :sg:`Input(device_id) -&gt; None`</span>
+<a name="l82"><span class="ln">82   </span></a>   <span class="s0">| :sg:`Input(device_id, buffer_size) -&gt; None`</span>
+<a name="l83"><span class="ln">83   </span></a>
+<a name="l84"><span class="ln">84   </span></a>   <span class="s0">:param int device_id: midi device id</span>
+<a name="l85"><span class="ln">85   </span></a>   <span class="s0">:param int buffer_size: (optional) the number of input events to be buffered</span>
+<a name="l86"><span class="ln">86   </span></a>
+<a name="l87"><span class="ln">87   </span></a>   <span class="s0">.. method:: close</span>
+<a name="l88"><span class="ln">88   </span></a>
+<a name="l89"><span class="ln">89   </span></a>      <span class="s0">| :sl:`closes a midi stream, flushing any pending buffers.`</span>
+<a name="l90"><span class="ln">90   </span></a>      <span class="s0">| :sg:`close() -&gt; None`</span>
+<a name="l91"><span class="ln">91   </span></a>
+<a name="l92"><span class="ln">92   </span></a>      <span class="s0">PortMidi attempts to close open streams when the application exits.</span>
+<a name="l93"><span class="ln">93   </span></a>
+<a name="l94"><span class="ln">94   </span></a>      <span class="s0">.. note:: This is particularly difficult under Windows.</span>
+<a name="l95"><span class="ln">95   </span></a>
+<a name="l96"><span class="ln">96   </span></a>      <span class="s0">.. ## Input.close ##</span>
+<a name="l97"><span class="ln">97   </span></a>
+<a name="l98"><span class="ln">98   </span></a>   <span class="s0">.. method:: poll</span>
+<a name="l99"><span class="ln">99   </span></a>
+<a name="l100"><span class="ln">100  </span></a>      <span class="s0">| :sl:`returns True if there's data, or False if not.`</span>
+<a name="l101"><span class="ln">101  </span></a>      <span class="s0">| :sg:`poll() -&gt; bool`</span>
+<a name="l102"><span class="ln">102  </span></a>
+<a name="l103"><span class="ln">103  </span></a>      <span class="s0">Used to indicate if any data exists.</span>
+<a name="l104"><span class="ln">104  </span></a>
+<a name="l105"><span class="ln">105  </span></a>      <span class="s0">:returns: ``True`` if there is data, ``False`` otherwise</span>
+<a name="l106"><span class="ln">106  </span></a>      <span class="s0">:rtype: bool</span>
+<a name="l107"><span class="ln">107  </span></a>
+<a name="l108"><span class="ln">108  </span></a>      <span class="s0">:raises MidiException: on error</span>
+<a name="l109"><span class="ln">109  </span></a>
+<a name="l110"><span class="ln">110  </span></a>      <span class="s0">.. ## Input.poll ##</span>
+<a name="l111"><span class="ln">111  </span></a>
+<a name="l112"><span class="ln">112  </span></a>   <span class="s0">.. method:: read</span>
+<a name="l113"><span class="ln">113  </span></a>
+<a name="l114"><span class="ln">114  </span></a>      <span class="s0">| :sl:`reads num_events midi events from the buffer.`</span>
+<a name="l115"><span class="ln">115  </span></a>      <span class="s0">| :sg:`read(num_events) -&gt; midi_event_list`</span>
+<a name="l116"><span class="ln">116  </span></a>
+<a name="l117"><span class="ln">117  </span></a>      <span class="s0">Reads from the input buffer and gives back midi events.</span>
+<a name="l118"><span class="ln">118  </span></a>
+<a name="l119"><span class="ln">119  </span></a>      <span class="s0">:param int num_events: number of input events to read</span>
+<a name="l120"><span class="ln">120  </span></a>
+<a name="l121"><span class="ln">121  </span></a>      <span class="s0">:returns: the format for midi_event_list is</span>
+<a name="l122"><span class="ln">122  </span></a>         <span class="s0">``[[[status, data1, data2, data3], timestamp], ...]``</span>
+<a name="l123"><span class="ln">123  </span></a>      <span class="s0">:rtype: list</span>
+<a name="l124"><span class="ln">124  </span></a>
+<a name="l125"><span class="ln">125  </span></a>      <span class="s0">.. ## Input.read ##</span>
+<a name="l126"><span class="ln">126  </span></a>
+<a name="l127"><span class="ln">127  </span></a>   <span class="s0">.. ## pygame.midi.Input ##</span>
+<a name="l128"><span class="ln">128  </span></a>
+<a name="l129"><span class="ln">129  </span></a><span class="s0">.. class:: Output</span>
+<a name="l130"><span class="ln">130  </span></a>
+<a name="l131"><span class="ln">131  </span></a>   <span class="s0">| :sl:`Output is used to send midi to an output device`</span>
+<a name="l132"><span class="ln">132  </span></a>   <span class="s0">| :sg:`Output(device_id) -&gt; None`</span>
+<a name="l133"><span class="ln">133  </span></a>   <span class="s0">| :sg:`Output(device_id, latency=0) -&gt; None`</span>
+<a name="l134"><span class="ln">134  </span></a>   <span class="s0">| :sg:`Output(device_id, buffer_size=256) -&gt; None`</span>
+<a name="l135"><span class="ln">135  </span></a>   <span class="s0">| :sg:`Output(device_id, latency, buffer_size) -&gt; None`</span>
+<a name="l136"><span class="ln">136  </span></a>
+<a name="l137"><span class="ln">137  </span></a>   <span class="s0">The ``buffer_size`` specifies the number of output events to be buffered</span>
+<a name="l138"><span class="ln">138  </span></a>   <span class="s0">waiting for output. In some cases (see below) PortMidi does not buffer</span>
+<a name="l139"><span class="ln">139  </span></a>   <span class="s0">output at all and merely passes data to a lower-level API, in which case</span>
+<a name="l140"><span class="ln">140  </span></a>   <span class="s0">buffersize is ignored.</span>
+<a name="l141"><span class="ln">141  </span></a>
+<a name="l142"><span class="ln">142  </span></a>   <span class="s0">``latency`` is the delay in milliseconds applied to timestamps to determine</span>
+<a name="l143"><span class="ln">143  </span></a>   <span class="s0">when the output should actually occur. If ``latency`` is &lt;&lt;0, 0 is assumed.</span>
+<a name="l144"><span class="ln">144  </span></a>
+<a name="l145"><span class="ln">145  </span></a>   <span class="s0">If ``latency`` is zero, timestamps are ignored and all output is delivered</span>
+<a name="l146"><span class="ln">146  </span></a>   <span class="s0">immediately. If ``latency`` is greater than zero, output is delayed until the</span>
+<a name="l147"><span class="ln">147  </span></a>   <span class="s0">message timestamp plus the ``latency``. In some cases, PortMidi can obtain</span>
+<a name="l148"><span class="ln">148  </span></a>   <span class="s0">better timing than your application by passing timestamps along to the</span>
+<a name="l149"><span class="ln">149  </span></a>   <span class="s0">device driver or hardware. Latency may also help you to synchronize midi</span>
+<a name="l150"><span class="ln">150  </span></a>   <span class="s0">data to audio data by matching midi latency to the audio buffer latency.</span>
+<a name="l151"><span class="ln">151  </span></a>
+<a name="l152"><span class="ln">152  </span></a>   <span class="s0">.. note::</span>
+<a name="l153"><span class="ln">153  </span></a>      <span class="s0">Time is measured relative to the time source indicated by time_proc.</span>
+<a name="l154"><span class="ln">154  </span></a>      <span class="s0">Timestamps are absolute, not relative delays or offsets.</span>
+<a name="l155"><span class="ln">155  </span></a>
+<a name="l156"><span class="ln">156  </span></a>   <span class="s0">.. method:: abort</span>
+<a name="l157"><span class="ln">157  </span></a>
+<a name="l158"><span class="ln">158  </span></a>      <span class="s0">| :sl:`terminates outgoing messages immediately`</span>
+<a name="l159"><span class="ln">159  </span></a>      <span class="s0">| :sg:`abort() -&gt; None`</span>
+<a name="l160"><span class="ln">160  </span></a>
+<a name="l161"><span class="ln">161  </span></a>      <span class="s0">The caller should immediately close the output port; this call may result</span>
+<a name="l162"><span class="ln">162  </span></a>      <span class="s0">in transmission of a partial midi message. There is no abort for Midi</span>
+<a name="l163"><span class="ln">163  </span></a>      <span class="s0">input because the user can simply ignore messages in the buffer and close</span>
+<a name="l164"><span class="ln">164  </span></a>      <span class="s0">an input device at any time.</span>
+<a name="l165"><span class="ln">165  </span></a>
+<a name="l166"><span class="ln">166  </span></a>      <span class="s0">.. ## Output.abort ##</span>
+<a name="l167"><span class="ln">167  </span></a>
+<a name="l168"><span class="ln">168  </span></a>   <span class="s0">.. method:: close</span>
+<a name="l169"><span class="ln">169  </span></a>
+<a name="l170"><span class="ln">170  </span></a>      <span class="s0">| :sl:`closes a midi stream, flushing any pending buffers.`</span>
+<a name="l171"><span class="ln">171  </span></a>      <span class="s0">| :sg:`close() -&gt; None`</span>
+<a name="l172"><span class="ln">172  </span></a>
+<a name="l173"><span class="ln">173  </span></a>      <span class="s0">PortMidi attempts to close open streams when the application exits.</span>
+<a name="l174"><span class="ln">174  </span></a>
+<a name="l175"><span class="ln">175  </span></a>      <span class="s0">.. note:: This is particularly difficult under Windows.</span>
+<a name="l176"><span class="ln">176  </span></a>
+<a name="l177"><span class="ln">177  </span></a>      <span class="s0">.. ## Output.close ##</span>
+<a name="l178"><span class="ln">178  </span></a>
+<a name="l179"><span class="ln">179  </span></a>   <span class="s0">.. method:: note_off</span>
+<a name="l180"><span class="ln">180  </span></a>
+<a name="l181"><span class="ln">181  </span></a>      <span class="s0">| :sl:`turns a midi note off (note must be on)`</span>
+<a name="l182"><span class="ln">182  </span></a>      <span class="s0">| :sg:`note_off(note, velocity=None, channel=0) -&gt; None`</span>
+<a name="l183"><span class="ln">183  </span></a>
+<a name="l184"><span class="ln">184  </span></a>      <span class="s0">Turn a note off in the output stream. The note must already be on for</span>
+<a name="l185"><span class="ln">185  </span></a>      <span class="s0">this to work correctly.</span>
+<a name="l186"><span class="ln">186  </span></a>
+<a name="l187"><span class="ln">187  </span></a>      <span class="s0">.. ## Output.note_off ##</span>
+<a name="l188"><span class="ln">188  </span></a>
+<a name="l189"><span class="ln">189  </span></a>   <span class="s0">.. method:: note_on</span>
+<a name="l190"><span class="ln">190  </span></a>
+<a name="l191"><span class="ln">191  </span></a>      <span class="s0">| :sl:`turns a midi note on (note must be off)`</span>
+<a name="l192"><span class="ln">192  </span></a>      <span class="s0">| :sg:`note_on(note, velocity=None, channel=0) -&gt; None`</span>
+<a name="l193"><span class="ln">193  </span></a>
+<a name="l194"><span class="ln">194  </span></a>      <span class="s0">Turn a note on in the output stream. The note must already be off for</span>
+<a name="l195"><span class="ln">195  </span></a>      <span class="s0">this to work correctly.</span>
+<a name="l196"><span class="ln">196  </span></a>
+<a name="l197"><span class="ln">197  </span></a>      <span class="s0">.. ## Output.note_on ##</span>
+<a name="l198"><span class="ln">198  </span></a>
+<a name="l199"><span class="ln">199  </span></a>   <span class="s0">.. method:: set_instrument</span>
+<a name="l200"><span class="ln">200  </span></a>
+<a name="l201"><span class="ln">201  </span></a>      <span class="s0">| :sl:`select an instrument, with a value between 0 and 127`</span>
+<a name="l202"><span class="ln">202  </span></a>      <span class="s0">| :sg:`set_instrument(instrument_id, channel=0) -&gt; None`</span>
+<a name="l203"><span class="ln">203  </span></a>
+<a name="l204"><span class="ln">204  </span></a>      <span class="s0">Select an instrument.</span>
+<a name="l205"><span class="ln">205  </span></a>
+<a name="l206"><span class="ln">206  </span></a>      <span class="s0">.. ## Output.set_instrument ##</span>
+<a name="l207"><span class="ln">207  </span></a>
+<a name="l208"><span class="ln">208  </span></a>   <span class="s0">.. method:: pitch_bend</span>
+<a name="l209"><span class="ln">209  </span></a>
+<a name="l210"><span class="ln">210  </span></a>      <span class="s0">| :sl:`modify the pitch of a channel.`</span>
+<a name="l211"><span class="ln">211  </span></a>      <span class="s0">| :sg:`set_instrument(value=0, channel=0) -&gt; None`</span>
+<a name="l212"><span class="ln">212  </span></a>
+<a name="l213"><span class="ln">213  </span></a>      <span class="s0">Adjust the pitch of a channel. The value is a signed integer</span>
+<a name="l214"><span class="ln">214  </span></a>      <span class="s0">from -8192 to +8191. For example, 0 means &quot;no change&quot;, +4096 is</span>
+<a name="l215"><span class="ln">215  </span></a>      <span class="s0">typically a semitone higher, and -8192 is 1 whole tone lower (though</span>
+<a name="l216"><span class="ln">216  </span></a>      <span class="s0">the musical range corresponding to the pitch bend range can also be</span>
+<a name="l217"><span class="ln">217  </span></a>      <span class="s0">changed in some synthesizers).</span>
+<a name="l218"><span class="ln">218  </span></a>
+<a name="l219"><span class="ln">219  </span></a>      <span class="s0">If no value is given, the pitch bend is returned to &quot;no change&quot;.</span>
+<a name="l220"><span class="ln">220  </span></a>
+<a name="l221"><span class="ln">221  </span></a>      <span class="s0">.. versionadded:: 1.9.4</span>
+<a name="l222"><span class="ln">222  </span></a>
+<a name="l223"><span class="ln">223  </span></a>   <span class="s0">.. method:: write</span>
+<a name="l224"><span class="ln">224  </span></a>
+<a name="l225"><span class="ln">225  </span></a>      <span class="s0">| :sl:`writes a list of midi data to the Output`</span>
+<a name="l226"><span class="ln">226  </span></a>      <span class="s0">| :sg:`write(data) -&gt; None`</span>
+<a name="l227"><span class="ln">227  </span></a>
+<a name="l228"><span class="ln">228  </span></a>      <span class="s0">Writes series of MIDI information in the form of a list.</span>
+<a name="l229"><span class="ln">229  </span></a>
+<a name="l230"><span class="ln">230  </span></a>      <span class="s0">:param list data: data to write, the expected format is</span>
+<a name="l231"><span class="ln">231  </span></a>         <span class="s0">``[[[status, data1=0, data2=0, ...], timestamp], ...]``</span>
+<a name="l232"><span class="ln">232  </span></a>         <span class="s0">with the ``data#`` fields being optional</span>
+<a name="l233"><span class="ln">233  </span></a>
+<a name="l234"><span class="ln">234  </span></a>      <span class="s0">:raises IndexError: if more than 1024 elements in the data list</span>
+<a name="l235"><span class="ln">235  </span></a>
+<a name="l236"><span class="ln">236  </span></a>      <span class="s0">Example:</span>
+<a name="l237"><span class="ln">237  </span></a>      <span class="s0">::</span>
+<a name="l238"><span class="ln">238  </span></a>
+<a name="l239"><span class="ln">239  </span></a>         <span class="s0"># Program change at time 20000 and 500ms later send note 65 with</span>
+<a name="l240"><span class="ln">240  </span></a>         <span class="s0"># velocity 100.</span>
+<a name="l241"><span class="ln">241  </span></a>         <span class="s0">write([[[0xc0, 0, 0], 20000], [[0x90, 60, 100], 20500]])</span>
+<a name="l242"><span class="ln">242  </span></a>
+<a name="l243"><span class="ln">243  </span></a>      <span class="s0">.. note::</span>
+<a name="l244"><span class="ln">244  </span></a>         <span class="s0">- Timestamps will be ignored if latency = 0</span>
+<a name="l245"><span class="ln">245  </span></a>         <span class="s0">- To get a note to play immediately, send MIDI info with timestamp</span>
+<a name="l246"><span class="ln">246  </span></a>           <span class="s0">read from function Time</span>
+<a name="l247"><span class="ln">247  </span></a>         <span class="s0">- Optional data fields: ``write([[[0xc0, 0, 0], 20000]])`` is</span>
+<a name="l248"><span class="ln">248  </span></a>           <span class="s0">equivalent to ``write([[[0xc0], 20000]])``</span>
+<a name="l249"><span class="ln">249  </span></a>
+<a name="l250"><span class="ln">250  </span></a>      <span class="s0">.. ## Output.write ##</span>
+<a name="l251"><span class="ln">251  </span></a>
+<a name="l252"><span class="ln">252  </span></a>   <span class="s0">.. method:: write_short</span>
+<a name="l253"><span class="ln">253  </span></a>
+<a name="l254"><span class="ln">254  </span></a>      <span class="s0">| :sl:`writes up to 3 bytes of midi data to the Output`</span>
+<a name="l255"><span class="ln">255  </span></a>      <span class="s0">| :sg:`write_short(status) -&gt; None`</span>
+<a name="l256"><span class="ln">256  </span></a>      <span class="s0">| :sg:`write_short(status, data1=0, data2=0) -&gt; None`</span>
+<a name="l257"><span class="ln">257  </span></a>
+<a name="l258"><span class="ln">258  </span></a>      <span class="s0">Output MIDI information of 3 bytes or less. The ``data`` fields are</span>
+<a name="l259"><span class="ln">259  </span></a>      <span class="s0">optional and assumed to be 0 if omitted.</span>
+<a name="l260"><span class="ln">260  </span></a>
+<a name="l261"><span class="ln">261  </span></a>      <span class="s0">Examples of status byte values:</span>
+<a name="l262"><span class="ln">262  </span></a>      <span class="s0">::</span>
+<a name="l263"><span class="ln">263  </span></a>
+<a name="l264"><span class="ln">264  </span></a>         <span class="s0">0xc0  # program change</span>
+<a name="l265"><span class="ln">265  </span></a>         <span class="s0">0x90  # note on</span>
+<a name="l266"><span class="ln">266  </span></a>         <span class="s0"># etc.</span>
+<a name="l267"><span class="ln">267  </span></a>
+<a name="l268"><span class="ln">268  </span></a>      <span class="s0">Example:</span>
+<a name="l269"><span class="ln">269  </span></a>      <span class="s0">::</span>
+<a name="l270"><span class="ln">270  </span></a>
+<a name="l271"><span class="ln">271  </span></a>         <span class="s0"># note 65 on with velocity 100</span>
+<a name="l272"><span class="ln">272  </span></a>         <span class="s0">write_short(0x90, 65, 100)</span>
+<a name="l273"><span class="ln">273  </span></a>
+<a name="l274"><span class="ln">274  </span></a>      <span class="s0">.. ## Output.write_short ##</span>
+<a name="l275"><span class="ln">275  </span></a>
+<a name="l276"><span class="ln">276  </span></a>   <span class="s0">.. method:: write_sys_ex</span>
+<a name="l277"><span class="ln">277  </span></a>
+<a name="l278"><span class="ln">278  </span></a>      <span class="s0">| :sl:`writes a timestamped system-exclusive midi message.`</span>
+<a name="l279"><span class="ln">279  </span></a>      <span class="s0">| :sg:`write_sys_ex(when, msg) -&gt; None`</span>
+<a name="l280"><span class="ln">280  </span></a>
+<a name="l281"><span class="ln">281  </span></a>      <span class="s0">Writes a timestamped system-exclusive midi message.</span>
+<a name="l282"><span class="ln">282  </span></a>
+<a name="l283"><span class="ln">283  </span></a>      <span class="s0">:param msg: midi message</span>
+<a name="l284"><span class="ln">284  </span></a>      <span class="s0">:type msg: list[int] or str</span>
+<a name="l285"><span class="ln">285  </span></a>      <span class="s0">:param when: timestamp in milliseconds</span>
+<a name="l286"><span class="ln">286  </span></a>
+<a name="l287"><span class="ln">287  </span></a>      <span class="s0">Example:</span>
+<a name="l288"><span class="ln">288  </span></a>      <span class="s0">::</span>
+<a name="l289"><span class="ln">289  </span></a>
+<a name="l290"><span class="ln">290  </span></a>         <span class="s0">midi_output.write_sys_ex(0, '\xF0\x7D\x10\x11\x12\x13\xF7')</span>
+<a name="l291"><span class="ln">291  </span></a>
+<a name="l292"><span class="ln">292  </span></a>         <span class="s0"># is equivalent to</span>
+<a name="l293"><span class="ln">293  </span></a>
+<a name="l294"><span class="ln">294  </span></a>         <span class="s0">midi_output.write_sys_ex(pygame.midi.time(),</span>
+<a name="l295"><span class="ln">295  </span></a>                                  <span class="s0">[0xF0, 0x7D, 0x10, 0x11, 0x12, 0x13, 0xF7])</span>
+<a name="l296"><span class="ln">296  </span></a>
+<a name="l297"><span class="ln">297  </span></a>      <span class="s0">.. ## Output.write_sys_ex ##</span>
+<a name="l298"><span class="ln">298  </span></a>
+<a name="l299"><span class="ln">299  </span></a>   <span class="s0">.. ## pygame.midi.Output ##</span>
+<a name="l300"><span class="ln">300  </span></a>
+<a name="l301"><span class="ln">301  </span></a><span class="s0">.. function:: get_count</span>
+<a name="l302"><span class="ln">302  </span></a>
+<a name="l303"><span class="ln">303  </span></a>   <span class="s0">| :sl:`gets the number of devices.`</span>
+<a name="l304"><span class="ln">304  </span></a>   <span class="s0">| :sg:`get_count() -&gt; num_devices`</span>
+<a name="l305"><span class="ln">305  </span></a>
+<a name="l306"><span class="ln">306  </span></a>   <span class="s0">Device ids range from 0 to ``get_count() - 1``</span>
+<a name="l307"><span class="ln">307  </span></a>
+<a name="l308"><span class="ln">308  </span></a>   <span class="s0">.. ## pygame.midi.get_count ##</span>
+<a name="l309"><span class="ln">309  </span></a>
+<a name="l310"><span class="ln">310  </span></a><span class="s0">.. function:: get_default_input_id</span>
+<a name="l311"><span class="ln">311  </span></a>
+<a name="l312"><span class="ln">312  </span></a>   <span class="s0">| :sl:`gets default input device number`</span>
+<a name="l313"><span class="ln">313  </span></a>   <span class="s0">| :sg:`get_default_input_id() -&gt; default_id`</span>
+<a name="l314"><span class="ln">314  </span></a>
+<a name="l315"><span class="ln">315  </span></a>   <span class="s0">The following describes the usage details for this function and the</span>
+<a name="l316"><span class="ln">316  </span></a>   <span class="s0">:func:`get_default_output_id` function.</span>
+<a name="l317"><span class="ln">317  </span></a>
+<a name="l318"><span class="ln">318  </span></a>   <span class="s0">Return the default device ID or ``-1`` if there are no devices. The result</span>
+<a name="l319"><span class="ln">319  </span></a>   <span class="s0">can be passed to the :class:`Input`/:class:`Output` class.</span>
+<a name="l320"><span class="ln">320  </span></a>
+<a name="l321"><span class="ln">321  </span></a>   <span class="s0">On a PC the user can specify a default device by setting an environment</span>
+<a name="l322"><span class="ln">322  </span></a>   <span class="s0">variable. To use device #1, for example:</span>
+<a name="l323"><span class="ln">323  </span></a>   <span class="s0">::</span>
+<a name="l324"><span class="ln">324  </span></a>
+<a name="l325"><span class="ln">325  </span></a>      <span class="s0">set PM_RECOMMENDED_INPUT_DEVICE=1</span>
+<a name="l326"><span class="ln">326  </span></a>      <span class="s0">or</span>
+<a name="l327"><span class="ln">327  </span></a>      <span class="s0">set PM_RECOMMENDED_OUTPUT_DEVICE=1</span>
+<a name="l328"><span class="ln">328  </span></a>
+<a name="l329"><span class="ln">329  </span></a>   <span class="s0">The user should first determine the available device ID by using the</span>
+<a name="l330"><span class="ln">330  </span></a>   <span class="s0">supplied application &quot;testin&quot; or &quot;testout&quot;.</span>
+<a name="l331"><span class="ln">331  </span></a>
+<a name="l332"><span class="ln">332  </span></a>   <span class="s0">In general, the registry is a better place for this kind of info. With</span>
+<a name="l333"><span class="ln">333  </span></a>   <span class="s0">USB devices that can come and go, using integers is not very reliable</span>
+<a name="l334"><span class="ln">334  </span></a>   <span class="s0">for device identification. Under Windows, if ``PM_RECOMMENDED_INPUT_DEVICE``</span>
+<a name="l335"><span class="ln">335  </span></a>   <span class="s0">(or ``PM_RECOMMENDED_OUTPUT_DEVICE``) is NOT found in the environment,</span>
+<a name="l336"><span class="ln">336  </span></a>   <span class="s0">then the default device is obtained by looking for a string in the registry</span>
+<a name="l337"><span class="ln">337  </span></a>   <span class="s0">under:</span>
+<a name="l338"><span class="ln">338  </span></a>   <span class="s0">::</span>
+<a name="l339"><span class="ln">339  </span></a>
+<a name="l340"><span class="ln">340  </span></a>      <span class="s0">HKEY_LOCAL_MACHINE/SOFTWARE/PortMidi/Recommended_Input_Device</span>
+<a name="l341"><span class="ln">341  </span></a>      <span class="s0">or</span>
+<a name="l342"><span class="ln">342  </span></a>      <span class="s0">HKEY_LOCAL_MACHINE/SOFTWARE/PortMidi/Recommended_Output_Device</span>
+<a name="l343"><span class="ln">343  </span></a>
+<a name="l344"><span class="ln">344  </span></a>
+<a name="l345"><span class="ln">345  </span></a>   <span class="s0">The number of the first device with a substring that matches the</span>
+<a name="l346"><span class="ln">346  </span></a>   <span class="s0">string exactly is returned. For example, if the string in the registry is</span>
+<a name="l347"><span class="ln">347  </span></a>   <span class="s0">&quot;USB&quot; and device 1 is named &quot;In USB MidiSport 1x1&quot;, then that will be</span>
+<a name="l348"><span class="ln">348  </span></a>   <span class="s0">the default input because it contains the string &quot;USB&quot;.</span>
+<a name="l349"><span class="ln">349  </span></a>
+<a name="l350"><span class="ln">350  </span></a>   <span class="s0">In addition to the name, :func:`get_device_info()` returns &quot;interf&quot;, which is</span>
+<a name="l351"><span class="ln">351  </span></a>   <span class="s0">the interface name. The &quot;interface&quot; is the underlying software system or</span>
+<a name="l352"><span class="ln">352  </span></a>   <span class="s0">API used by PortMidi to access devices. Supported interfaces:</span>
+<a name="l353"><span class="ln">353  </span></a>   <span class="s0">::</span>
+<a name="l354"><span class="ln">354  </span></a>
+<a name="l355"><span class="ln">355  </span></a>      <span class="s0">MMSystem   # the only Win32 interface currently supported</span>
+<a name="l356"><span class="ln">356  </span></a>      <span class="s0">ALSA       # the only Linux interface currently supported</span>
+<a name="l357"><span class="ln">357  </span></a>      <span class="s0">CoreMIDI   # the only Mac OS X interface currently supported</span>
+<a name="l358"><span class="ln">358  </span></a>      <span class="s0"># DirectX - not implemented</span>
+<a name="l359"><span class="ln">359  </span></a>      <span class="s0"># OSS     - not implemented</span>
+<a name="l360"><span class="ln">360  </span></a>
+<a name="l361"><span class="ln">361  </span></a>   <span class="s0">To specify both the interface and the device name in the registry, separate</span>
+<a name="l362"><span class="ln">362  </span></a>   <span class="s0">the two with a comma and a space. The string before the comma must be a</span>
+<a name="l363"><span class="ln">363  </span></a>   <span class="s0">substring of the &quot;interf&quot; string and the string after the space must be a</span>
+<a name="l364"><span class="ln">364  </span></a>   <span class="s0">substring of the &quot;name&quot; name string in order to match the device. e.g.:</span>
+<a name="l365"><span class="ln">365  </span></a>   <span class="s0">::</span>
+<a name="l366"><span class="ln">366  </span></a>
+<a name="l367"><span class="ln">367  </span></a>      <span class="s0">MMSystem, In USB MidiSport 1x1</span>
+<a name="l368"><span class="ln">368  </span></a>
+<a name="l369"><span class="ln">369  </span></a>   <span class="s0">.. note::</span>
+<a name="l370"><span class="ln">370  </span></a>      <span class="s0">In the current release, the default is simply the first device (the</span>
+<a name="l371"><span class="ln">371  </span></a>      <span class="s0">input or output device with the lowest PmDeviceID).</span>
+<a name="l372"><span class="ln">372  </span></a>
+<a name="l373"><span class="ln">373  </span></a>   <span class="s0">.. ## pygame.midi.get_default_input_id ##</span>
+<a name="l374"><span class="ln">374  </span></a>
+<a name="l375"><span class="ln">375  </span></a><span class="s0">.. function:: get_default_output_id</span>
+<a name="l376"><span class="ln">376  </span></a>
+<a name="l377"><span class="ln">377  </span></a>   <span class="s0">| :sl:`gets default output device number`</span>
+<a name="l378"><span class="ln">378  </span></a>   <span class="s0">| :sg:`get_default_output_id() -&gt; default_id`</span>
+<a name="l379"><span class="ln">379  </span></a>
+<a name="l380"><span class="ln">380  </span></a>   <span class="s0">See :func:`get_default_input_id` for usage details.</span>
+<a name="l381"><span class="ln">381  </span></a>
+<a name="l382"><span class="ln">382  </span></a>   <span class="s0">.. ## pygame.midi.get_default_output_id ##</span>
+<a name="l383"><span class="ln">383  </span></a>
+<a name="l384"><span class="ln">384  </span></a><span class="s0">.. function:: get_device_info</span>
+<a name="l385"><span class="ln">385  </span></a>
+<a name="l386"><span class="ln">386  </span></a>   <span class="s0">| :sl:`returns information about a midi device`</span>
+<a name="l387"><span class="ln">387  </span></a>   <span class="s0">| :sg:`get_device_info(an_id) -&gt; (interf, name, input, output, opened)`</span>
+<a name="l388"><span class="ln">388  </span></a>   <span class="s0">| :sg:`get_device_info(an_id) -&gt; None`</span>
+<a name="l389"><span class="ln">389  </span></a>
+<a name="l390"><span class="ln">390  </span></a>   <span class="s0">Gets the device info for a given id.</span>
+<a name="l391"><span class="ln">391  </span></a>
+<a name="l392"><span class="ln">392  </span></a>   <span class="s0">:param int an_id: id of the midi device being queried</span>
+<a name="l393"><span class="ln">393  </span></a>
+<a name="l394"><span class="ln">394  </span></a>   <span class="s0">:returns: if the id is out of range ``None`` is returned, otherwise</span>
+<a name="l395"><span class="ln">395  </span></a>      <span class="s0">a tuple of (interf, name, input, output, opened) is returned.</span>
+<a name="l396"><span class="ln">396  </span></a>
+<a name="l397"><span class="ln">397  </span></a>         <span class="s0">- interf: string describing the device interface (e.g. 'ALSA')</span>
+<a name="l398"><span class="ln">398  </span></a>         <span class="s0">- name: string name of the device (e.g. 'Midi Through Port-0')</span>
+<a name="l399"><span class="ln">399  </span></a>         <span class="s0">- input: 1 if the device is an input device, otherwise 0</span>
+<a name="l400"><span class="ln">400  </span></a>         <span class="s0">- output: 1 if the device is an output device, otherwise 0</span>
+<a name="l401"><span class="ln">401  </span></a>         <span class="s0">- opened: 1 if the device is opened, otherwise 0</span>
+<a name="l402"><span class="ln">402  </span></a>   <span class="s0">:rtype: tuple or None</span>
+<a name="l403"><span class="ln">403  </span></a>
+<a name="l404"><span class="ln">404  </span></a>   <span class="s0">.. ## pygame.midi.get_device_info ##</span>
+<a name="l405"><span class="ln">405  </span></a>
+<a name="l406"><span class="ln">406  </span></a><span class="s0">.. function:: midis2events</span>
+<a name="l407"><span class="ln">407  </span></a>
+<a name="l408"><span class="ln">408  </span></a>   <span class="s0">| :sl:`converts midi events to pygame events`</span>
+<a name="l409"><span class="ln">409  </span></a>   <span class="s0">| :sg:`midis2events(midi_events, device_id) -&gt; [Event, ...]`</span>
+<a name="l410"><span class="ln">410  </span></a>
+<a name="l411"><span class="ln">411  </span></a>   <span class="s0">Takes a sequence of midi events and returns list of pygame events.</span>
+<a name="l412"><span class="ln">412  </span></a>
+<a name="l413"><span class="ln">413  </span></a>   <span class="s0">The ``midi_events`` data is expected to be a sequence of</span>
+<a name="l414"><span class="ln">414  </span></a>   <span class="s0">``((status, data1, data2, data3), timestamp)`` midi events (all values</span>
+<a name="l415"><span class="ln">415  </span></a>   <span class="s0">required).</span>
+<a name="l416"><span class="ln">416  </span></a>
+<a name="l417"><span class="ln">417  </span></a>   <span class="s0">:returns: a list of pygame events of event type ``MIDIIN``</span>
+<a name="l418"><span class="ln">418  </span></a>   <span class="s0">:rtype: list</span>
+<a name="l419"><span class="ln">419  </span></a>
+<a name="l420"><span class="ln">420  </span></a>   <span class="s0">.. ## pygame.midi.midis2events ##</span>
+<a name="l421"><span class="ln">421  </span></a>
+<a name="l422"><span class="ln">422  </span></a><span class="s0">.. function:: time</span>
+<a name="l423"><span class="ln">423  </span></a>
+<a name="l424"><span class="ln">424  </span></a>   <span class="s0">| :sl:`returns the current time in ms of the PortMidi timer`</span>
+<a name="l425"><span class="ln">425  </span></a>   <span class="s0">| :sg:`time() -&gt; time`</span>
+<a name="l426"><span class="ln">426  </span></a>
+<a name="l427"><span class="ln">427  </span></a>   <span class="s0">The time is reset to 0 when the :mod:`pygame.midi` module is initialized.</span>
+<a name="l428"><span class="ln">428  </span></a>
+<a name="l429"><span class="ln">429  </span></a>   <span class="s0">.. ## pygame.midi.time ##</span>
+<a name="l430"><span class="ln">430  </span></a>
+<a name="l431"><span class="ln">431  </span></a>
+<a name="l432"><span class="ln">432  </span></a><span class="s0">.. function:: frequency_to_midi</span>
+<a name="l433"><span class="ln">433  </span></a>
+<a name="l434"><span class="ln">434  </span></a>   <span class="s0">| :sl:`Converts a frequency into a MIDI note. Rounds to the closest midi note.`</span>
+<a name="l435"><span class="ln">435  </span></a>   <span class="s0">| :sg:`frequency_to_midi(midi_note) -&gt; midi_note`</span>
+<a name="l436"><span class="ln">436  </span></a>
+<a name="l437"><span class="ln">437  </span></a>   <span class="s0">example:</span>
+<a name="l438"><span class="ln">438  </span></a>   <span class="s0">::</span>
+<a name="l439"><span class="ln">439  </span></a>
+<a name="l440"><span class="ln">440  </span></a>       <span class="s0">frequency_to_midi(27.5) == 21</span>
+<a name="l441"><span class="ln">441  </span></a>
+<a name="l442"><span class="ln">442  </span></a>   <span class="s0">.. versionadded:: 1.9.5</span>
+<a name="l443"><span class="ln">443  </span></a>
+<a name="l444"><span class="ln">444  </span></a>   <span class="s0">.. ## pygame.midi.frequency_to_midi ##</span>
+<a name="l445"><span class="ln">445  </span></a>
+<a name="l446"><span class="ln">446  </span></a>
+<a name="l447"><span class="ln">447  </span></a><span class="s0">.. function:: midi_to_frequency</span>
+<a name="l448"><span class="ln">448  </span></a>
+<a name="l449"><span class="ln">449  </span></a>   <span class="s0">| :sl:`Converts a midi note to a frequency.`</span>
+<a name="l450"><span class="ln">450  </span></a>   <span class="s0">| :sg:`midi_to_frequency(midi_note) -&gt; frequency`</span>
+<a name="l451"><span class="ln">451  </span></a>
+<a name="l452"><span class="ln">452  </span></a>   <span class="s0">example:</span>
+<a name="l453"><span class="ln">453  </span></a>   <span class="s0">::</span>
+<a name="l454"><span class="ln">454  </span></a>
+<a name="l455"><span class="ln">455  </span></a>       <span class="s0">midi_to_frequency(21) == 27.5</span>
+<a name="l456"><span class="ln">456  </span></a>
+<a name="l457"><span class="ln">457  </span></a>   <span class="s0">.. versionadded:: 1.9.5</span>
+<a name="l458"><span class="ln">458  </span></a>
+<a name="l459"><span class="ln">459  </span></a>   <span class="s0">.. ## pygame.midi.midi_to_frequency ##</span>
+<a name="l460"><span class="ln">460  </span></a>
+<a name="l461"><span class="ln">461  </span></a>
+<a name="l462"><span class="ln">462  </span></a><span class="s0">.. function:: midi_to_ansi_note</span>
+<a name="l463"><span class="ln">463  </span></a>
+<a name="l464"><span class="ln">464  </span></a>   <span class="s0">| :sl:`Returns the Ansi Note name for a midi number.`</span>
+<a name="l465"><span class="ln">465  </span></a>   <span class="s0">| :sg:`midi_to_ansi_note(midi_note) -&gt; ansi_note`</span>
+<a name="l466"><span class="ln">466  </span></a>
+<a name="l467"><span class="ln">467  </span></a>   <span class="s0">example:</span>
+<a name="l468"><span class="ln">468  </span></a>   <span class="s0">::</span>
+<a name="l469"><span class="ln">469  </span></a>
+<a name="l470"><span class="ln">470  </span></a>       <span class="s0">midi_to_ansi_note(21) == 'A0'</span>
+<a name="l471"><span class="ln">471  </span></a>
+<a name="l472"><span class="ln">472  </span></a>   <span class="s0">.. versionadded:: 1.9.5</span>
+<a name="l473"><span class="ln">473  </span></a>
+<a name="l474"><span class="ln">474  </span></a>   <span class="s0">.. ## pygame.midi.midi_to_ansi_note ##</span>
+<a name="l475"><span class="ln">475  </span></a>
+<a name="l476"><span class="ln">476  </span></a><span class="s0">.. exception:: MidiException</span>
+<a name="l477"><span class="ln">477  </span></a>
+<a name="l478"><span class="ln">478  </span></a>   <span class="s0">| :sl:`exception that pygame.midi functions and classes can raise`</span>
+<a name="l479"><span class="ln">479  </span></a>   <span class="s0">| :sg:`MidiException(errno) -&gt; None`</span>
+<a name="l480"><span class="ln">480  </span></a>
+<a name="l481"><span class="ln">481  </span></a>   <span class="s0">.. ## pygame.midi.MidiException ##</span>
+<a name="l482"><span class="ln">482  </span></a>
+<a name="l483"><span class="ln">483  </span></a>
+<a name="l484"><span class="ln">484  </span></a><span class="s0">.. ## pygame.midi ##</span>
+<a name="l485"><span class="ln">485  </span></a></pre>
+</body>
+</html>

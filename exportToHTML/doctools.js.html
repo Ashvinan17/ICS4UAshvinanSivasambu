@@ -1,0 +1,346 @@
+<html>
+<head>
+<title>doctools.js</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #808080;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #cc7832;}
+.s3 { color: #6a8759;}
+.s4 { color: #6897bb;}
+.s5 { color: #4646f1;}
+.ln { color: #606366; font-weight: normal; font-style: normal; }
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+doctools.js</font>
+</center></td></tr></table>
+<pre><a name="l1"><span class="ln">1    </span></a><span class="s0">/* 
+<a name="l2"><span class="ln">2    </span></a> * doctools.js 
+<a name="l3"><span class="ln">3    </span></a> * ~~~~~~~~~~~ 
+<a name="l4"><span class="ln">4    </span></a> * 
+<a name="l5"><span class="ln">5    </span></a> * Sphinx JavaScript utilities for all documentation. 
+<a name="l6"><span class="ln">6    </span></a> * 
+<a name="l7"><span class="ln">7    </span></a> * :copyright: Copyright 2007-2021 by the Sphinx team, see AUTHORS. 
+<a name="l8"><span class="ln">8    </span></a> * :license: BSD, see LICENSE for details. 
+<a name="l9"><span class="ln">9    </span></a> * 
+<a name="l10"><span class="ln">10   </span></a> */</span>
+<a name="l11"><span class="ln">11   </span></a>
+<a name="l12"><span class="ln">12   </span></a><span class="s0">/** 
+<a name="l13"><span class="ln">13   </span></a> * select a different prefix for underscore 
+<a name="l14"><span class="ln">14   </span></a> */</span>
+<a name="l15"><span class="ln">15   </span></a><span class="s1">$u = _.noConflict();</span>
+<a name="l16"><span class="ln">16   </span></a>
+<a name="l17"><span class="ln">17   </span></a><span class="s0">/** 
+<a name="l18"><span class="ln">18   </span></a> * make the code below compatible with browsers without 
+<a name="l19"><span class="ln">19   </span></a> * an installed firebug like debugger 
+<a name="l20"><span class="ln">20   </span></a>if (!window.console || !console.firebug) { 
+<a name="l21"><span class="ln">21   </span></a>  var names = [&quot;log&quot;, &quot;debug&quot;, &quot;info&quot;, &quot;warn&quot;, &quot;error&quot;, &quot;assert&quot;, &quot;dir&quot;, 
+<a name="l22"><span class="ln">22   </span></a>    &quot;dirxml&quot;, &quot;group&quot;, &quot;groupEnd&quot;, &quot;time&quot;, &quot;timeEnd&quot;, &quot;count&quot;, &quot;trace&quot;, 
+<a name="l23"><span class="ln">23   </span></a>    &quot;profile&quot;, &quot;profileEnd&quot;]; 
+<a name="l24"><span class="ln">24   </span></a>  window.console = {}; 
+<a name="l25"><span class="ln">25   </span></a>  for (var i = 0; i &lt; names.length; ++i) 
+<a name="l26"><span class="ln">26   </span></a>    window.console[names[i]] = function() {}; 
+<a name="l27"><span class="ln">27   </span></a>} 
+<a name="l28"><span class="ln">28   </span></a> */</span>
+<a name="l29"><span class="ln">29   </span></a>
+<a name="l30"><span class="ln">30   </span></a><span class="s0">/** 
+<a name="l31"><span class="ln">31   </span></a> * small helper function to urldecode strings 
+<a name="l32"><span class="ln">32   </span></a> * 
+<a name="l33"><span class="ln">33   </span></a> * See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/decodeURIComponent#Decoding_query_parameters_from_a_URL 
+<a name="l34"><span class="ln">34   </span></a> */</span>
+<a name="l35"><span class="ln">35   </span></a><span class="s1">jQuery.urldecode = </span><span class="s2">function</span><span class="s1">(x) {</span>
+<a name="l36"><span class="ln">36   </span></a>  <span class="s2">if </span><span class="s1">(!x) {</span>
+<a name="l37"><span class="ln">37   </span></a>    <span class="s2">return </span><span class="s1">x</span>
+<a name="l38"><span class="ln">38   </span></a>  <span class="s1">}</span>
+<a name="l39"><span class="ln">39   </span></a>  <span class="s2">return </span><span class="s1">decodeURIComponent(x.replace(/\+/g, </span><span class="s3">' '</span><span class="s1">));</span>
+<a name="l40"><span class="ln">40   </span></a><span class="s1">};</span>
+<a name="l41"><span class="ln">41   </span></a>
+<a name="l42"><span class="ln">42   </span></a><span class="s0">/** 
+<a name="l43"><span class="ln">43   </span></a> * small helper function to urlencode strings 
+<a name="l44"><span class="ln">44   </span></a> */</span>
+<a name="l45"><span class="ln">45   </span></a><span class="s1">jQuery.urlencode = encodeURIComponent;</span>
+<a name="l46"><span class="ln">46   </span></a>
+<a name="l47"><span class="ln">47   </span></a><span class="s0">/** 
+<a name="l48"><span class="ln">48   </span></a> * This function returns the parsed url parameters of the 
+<a name="l49"><span class="ln">49   </span></a> * current request. Multiple values per key are supported, 
+<a name="l50"><span class="ln">50   </span></a> * it will always return arrays of strings for the value parts. 
+<a name="l51"><span class="ln">51   </span></a> */</span>
+<a name="l52"><span class="ln">52   </span></a><span class="s1">jQuery.getQueryParameters = </span><span class="s2">function</span><span class="s1">(s) {</span>
+<a name="l53"><span class="ln">53   </span></a>  <span class="s2">if </span><span class="s1">(</span><span class="s2">typeof </span><span class="s1">s === </span><span class="s3">'undefined'</span><span class="s1">)</span>
+<a name="l54"><span class="ln">54   </span></a>    <span class="s1">s = document.location.search;</span>
+<a name="l55"><span class="ln">55   </span></a>  <span class="s2">var </span><span class="s1">parts = s.substr(s.indexOf(</span><span class="s3">'?'</span><span class="s1">) + </span><span class="s4">1</span><span class="s1">).split(</span><span class="s3">'&amp;'</span><span class="s1">);</span>
+<a name="l56"><span class="ln">56   </span></a>  <span class="s2">var </span><span class="s1">result = {};</span>
+<a name="l57"><span class="ln">57   </span></a>  <span class="s2">for </span><span class="s1">(</span><span class="s2">var </span><span class="s1">i = </span><span class="s4">0</span><span class="s1">; i &lt; parts.length; i++) {</span>
+<a name="l58"><span class="ln">58   </span></a>    <span class="s2">var </span><span class="s1">tmp = parts[i].split(</span><span class="s3">'='</span><span class="s1">, </span><span class="s4">2</span><span class="s1">);</span>
+<a name="l59"><span class="ln">59   </span></a>    <span class="s2">var </span><span class="s1">key = jQuery.urldecode(tmp[</span><span class="s4">0</span><span class="s1">]);</span>
+<a name="l60"><span class="ln">60   </span></a>    <span class="s2">var </span><span class="s1">value = jQuery.urldecode(tmp[</span><span class="s4">1</span><span class="s1">]);</span>
+<a name="l61"><span class="ln">61   </span></a>    <span class="s2">if </span><span class="s1">(key </span><span class="s2">in </span><span class="s1">result)</span>
+<a name="l62"><span class="ln">62   </span></a>      <span class="s1">result[key].push(value);</span>
+<a name="l63"><span class="ln">63   </span></a>    <span class="s2">else</span>
+<a name="l64"><span class="ln">64   </span></a>      <span class="s1">result[key] = [value];</span>
+<a name="l65"><span class="ln">65   </span></a>  <span class="s1">}</span>
+<a name="l66"><span class="ln">66   </span></a>  <span class="s2">return </span><span class="s1">result;</span>
+<a name="l67"><span class="ln">67   </span></a><span class="s1">};</span>
+<a name="l68"><span class="ln">68   </span></a>
+<a name="l69"><span class="ln">69   </span></a><span class="s0">/** 
+<a name="l70"><span class="ln">70   </span></a> * highlight a given string on a jquery object by wrapping it in 
+<a name="l71"><span class="ln">71   </span></a> * span elements with the given class name. 
+<a name="l72"><span class="ln">72   </span></a> */</span>
+<a name="l73"><span class="ln">73   </span></a><span class="s1">jQuery.fn.highlightText = </span><span class="s2">function</span><span class="s1">(text, className) {</span>
+<a name="l74"><span class="ln">74   </span></a>  <span class="s2">function </span><span class="s1">highlight(node, addItems) {</span>
+<a name="l75"><span class="ln">75   </span></a>    <span class="s2">if </span><span class="s1">(node.nodeType === </span><span class="s4">3</span><span class="s1">) {</span>
+<a name="l76"><span class="ln">76   </span></a>      <span class="s2">var </span><span class="s1">val = node.nodeValue;</span>
+<a name="l77"><span class="ln">77   </span></a>      <span class="s2">var </span><span class="s1">pos = val.toLowerCase().indexOf(text);</span>
+<a name="l78"><span class="ln">78   </span></a>      <span class="s2">if </span><span class="s1">(pos &gt;= </span><span class="s4">0 </span><span class="s1">&amp;&amp;</span>
+<a name="l79"><span class="ln">79   </span></a>          <span class="s1">!jQuery(node.parentNode).hasClass(className) &amp;&amp;</span>
+<a name="l80"><span class="ln">80   </span></a>          <span class="s1">!jQuery(node.parentNode).hasClass(</span><span class="s3">&quot;nohighlight&quot;</span><span class="s1">)) {</span>
+<a name="l81"><span class="ln">81   </span></a>        <span class="s2">var </span><span class="s1">span;</span>
+<a name="l82"><span class="ln">82   </span></a>        <span class="s2">var </span><span class="s1">isInSVG = jQuery(node).closest(</span><span class="s3">&quot;body, svg, foreignObject&quot;</span><span class="s1">).is(</span><span class="s3">&quot;svg&quot;</span><span class="s1">);</span>
+<a name="l83"><span class="ln">83   </span></a>        <span class="s2">if </span><span class="s1">(isInSVG) {</span>
+<a name="l84"><span class="ln">84   </span></a>          <span class="s1">span = document.createElementNS(</span><span class="s3">&quot;http://www.w3.org/2000/svg&quot;</span><span class="s1">, </span><span class="s3">&quot;tspan&quot;</span><span class="s1">);</span>
+<a name="l85"><span class="ln">85   </span></a>        <span class="s1">} </span><span class="s2">else </span><span class="s1">{</span>
+<a name="l86"><span class="ln">86   </span></a>          <span class="s1">span = document.createElement(</span><span class="s3">&quot;span&quot;</span><span class="s1">);</span>
+<a name="l87"><span class="ln">87   </span></a>          <span class="s1">span.className = className;</span>
+<a name="l88"><span class="ln">88   </span></a>        <span class="s1">}</span>
+<a name="l89"><span class="ln">89   </span></a>        <span class="s1">span.appendChild(document.createTextNode(val.substr(pos, text.length)));</span>
+<a name="l90"><span class="ln">90   </span></a>        <span class="s1">node.parentNode.insertBefore(span, node.parentNode.insertBefore(</span>
+<a name="l91"><span class="ln">91   </span></a>          <span class="s1">document.createTextNode(val.substr(pos + text.length)),</span>
+<a name="l92"><span class="ln">92   </span></a>          <span class="s1">node.nextSibling));</span>
+<a name="l93"><span class="ln">93   </span></a>        <span class="s1">node.nodeValue = val.substr(</span><span class="s4">0</span><span class="s1">, pos);</span>
+<a name="l94"><span class="ln">94   </span></a>        <span class="s2">if </span><span class="s1">(isInSVG) {</span>
+<a name="l95"><span class="ln">95   </span></a>          <span class="s2">var </span><span class="s1">rect = document.createElementNS(</span><span class="s3">&quot;http://www.w3.org/2000/svg&quot;</span><span class="s1">, </span><span class="s3">&quot;rect&quot;</span><span class="s1">);</span>
+<a name="l96"><span class="ln">96   </span></a>          <span class="s2">var </span><span class="s1">bbox = node.parentElement.getBBox();</span>
+<a name="l97"><span class="ln">97   </span></a>          <span class="s1">rect.x.baseVal.value = bbox.x;</span>
+<a name="l98"><span class="ln">98   </span></a>          <span class="s1">rect.y.baseVal.value = bbox.y;</span>
+<a name="l99"><span class="ln">99   </span></a>          <span class="s1">rect.width.baseVal.value = bbox.width;</span>
+<a name="l100"><span class="ln">100  </span></a>          <span class="s1">rect.height.baseVal.value = bbox.height;</span>
+<a name="l101"><span class="ln">101  </span></a>          <span class="s1">rect.setAttribute(</span><span class="s3">'class'</span><span class="s1">, className);</span>
+<a name="l102"><span class="ln">102  </span></a>          <span class="s1">addItems.push({</span>
+<a name="l103"><span class="ln">103  </span></a>              <span class="s3">&quot;parent&quot;</span><span class="s1">: node.parentNode,</span>
+<a name="l104"><span class="ln">104  </span></a>              <span class="s3">&quot;target&quot;</span><span class="s1">: rect});</span>
+<a name="l105"><span class="ln">105  </span></a>        <span class="s1">}</span>
+<a name="l106"><span class="ln">106  </span></a>      <span class="s1">}</span>
+<a name="l107"><span class="ln">107  </span></a>    <span class="s1">}</span>
+<a name="l108"><span class="ln">108  </span></a>    <span class="s2">else if </span><span class="s1">(!jQuery(node).is(</span><span class="s3">&quot;button, select, textarea&quot;</span><span class="s1">)) {</span>
+<a name="l109"><span class="ln">109  </span></a>      <span class="s1">jQuery.each(node.childNodes, </span><span class="s2">function</span><span class="s1">() {</span>
+<a name="l110"><span class="ln">110  </span></a>        <span class="s1">highlight(</span><span class="s2">this</span><span class="s1">, addItems);</span>
+<a name="l111"><span class="ln">111  </span></a>      <span class="s1">});</span>
+<a name="l112"><span class="ln">112  </span></a>    <span class="s1">}</span>
+<a name="l113"><span class="ln">113  </span></a>  <span class="s1">}</span>
+<a name="l114"><span class="ln">114  </span></a>  <span class="s2">var </span><span class="s1">addItems = [];</span>
+<a name="l115"><span class="ln">115  </span></a>  <span class="s2">var </span><span class="s1">result = </span><span class="s2">this</span><span class="s1">.each(</span><span class="s2">function</span><span class="s1">() {</span>
+<a name="l116"><span class="ln">116  </span></a>    <span class="s1">highlight(</span><span class="s2">this</span><span class="s1">, addItems);</span>
+<a name="l117"><span class="ln">117  </span></a>  <span class="s1">});</span>
+<a name="l118"><span class="ln">118  </span></a>  <span class="s2">for </span><span class="s1">(</span><span class="s2">var </span><span class="s1">i = </span><span class="s4">0</span><span class="s1">; i &lt; addItems.length; ++i) {</span>
+<a name="l119"><span class="ln">119  </span></a>    <span class="s1">jQuery(addItems[i].parent).before(addItems[i].target);</span>
+<a name="l120"><span class="ln">120  </span></a>  <span class="s1">}</span>
+<a name="l121"><span class="ln">121  </span></a>  <span class="s2">return </span><span class="s1">result;</span>
+<a name="l122"><span class="ln">122  </span></a><span class="s1">};</span>
+<a name="l123"><span class="ln">123  </span></a>
+<a name="l124"><span class="ln">124  </span></a><span class="s0">/* 
+<a name="l125"><span class="ln">125  </span></a> * backward compatibility for jQuery.browser 
+<a name="l126"><span class="ln">126  </span></a> * This will be supported until firefox bug is fixed. 
+<a name="l127"><span class="ln">127  </span></a> */</span>
+<a name="l128"><span class="ln">128  </span></a><span class="s2">if </span><span class="s1">(!jQuery.browser) {</span>
+<a name="l129"><span class="ln">129  </span></a>  <span class="s1">jQuery.uaMatch = </span><span class="s2">function</span><span class="s1">(ua) {</span>
+<a name="l130"><span class="ln">130  </span></a>    <span class="s1">ua = ua.toLowerCase();</span>
+<a name="l131"><span class="ln">131  </span></a>
+<a name="l132"><span class="ln">132  </span></a>    <span class="s2">var </span><span class="s1">match = /(chrome)[ \/]([\w.]+)/.exec(ua) ||</span>
+<a name="l133"><span class="ln">133  </span></a>      <span class="s1">/(webkit)[ \/]([\w.]+)/.exec(ua) ||</span>
+<a name="l134"><span class="ln">134  </span></a>      <span class="s1">/(opera)(?:.*version|)[ \/]([\w.]+)/.exec(ua) ||</span>
+<a name="l135"><span class="ln">135  </span></a>      <span class="s1">/(msie) ([\w.]+)/.exec(ua) ||</span>
+<a name="l136"><span class="ln">136  </span></a>      <span class="s1">ua.indexOf(</span><span class="s3">&quot;compatible&quot;</span><span class="s1">) &lt; </span><span class="s4">0 </span><span class="s1">&amp;&amp; /(mozilla)(?:.*? rv:([\w.]+)|)/.exec(ua) ||</span>
+<a name="l137"><span class="ln">137  </span></a>      <span class="s1">[];</span>
+<a name="l138"><span class="ln">138  </span></a>
+<a name="l139"><span class="ln">139  </span></a>    <span class="s2">return </span><span class="s1">{</span>
+<a name="l140"><span class="ln">140  </span></a>      <span class="s1">browser: match[ </span><span class="s4">1 </span><span class="s1">] || </span><span class="s3">&quot;&quot;</span><span class="s1">,</span>
+<a name="l141"><span class="ln">141  </span></a>      <span class="s1">version: match[ </span><span class="s4">2 </span><span class="s1">] || </span><span class="s3">&quot;0&quot;</span>
+<a name="l142"><span class="ln">142  </span></a>    <span class="s1">};</span>
+<a name="l143"><span class="ln">143  </span></a>  <span class="s1">};</span>
+<a name="l144"><span class="ln">144  </span></a>  <span class="s1">jQuery.browser = {};</span>
+<a name="l145"><span class="ln">145  </span></a>  <span class="s1">jQuery.browser[jQuery.uaMatch(navigator.userAgent).browser] = </span><span class="s2">true</span><span class="s1">;</span>
+<a name="l146"><span class="ln">146  </span></a><span class="s1">}</span>
+<a name="l147"><span class="ln">147  </span></a>
+<a name="l148"><span class="ln">148  </span></a><span class="s0">/** 
+<a name="l149"><span class="ln">149  </span></a> * Small JavaScript module for the documentation. 
+<a name="l150"><span class="ln">150  </span></a> */</span>
+<a name="l151"><span class="ln">151  </span></a><span class="s2">var </span><span class="s1">Documentation = {</span>
+<a name="l152"><span class="ln">152  </span></a>
+<a name="l153"><span class="ln">153  </span></a>  <span class="s1">init : </span><span class="s2">function</span><span class="s1">() {</span>
+<a name="l154"><span class="ln">154  </span></a>    <span class="s2">this</span><span class="s1">.fixFirefoxAnchorBug();</span>
+<a name="l155"><span class="ln">155  </span></a>    <span class="s2">this</span><span class="s1">.highlightSearchWords();</span>
+<a name="l156"><span class="ln">156  </span></a>    <span class="s2">this</span><span class="s1">.initIndexTable();</span>
+<a name="l157"><span class="ln">157  </span></a>    <span class="s2">if </span><span class="s1">(DOCUMENTATION_OPTIONS.NAVIGATION_WITH_KEYS) {</span>
+<a name="l158"><span class="ln">158  </span></a>      <span class="s2">this</span><span class="s1">.initOnKeyListeners();</span>
+<a name="l159"><span class="ln">159  </span></a>    <span class="s1">}</span>
+<a name="l160"><span class="ln">160  </span></a>  <span class="s1">},</span>
+<a name="l161"><span class="ln">161  </span></a>
+<a name="l162"><span class="ln">162  </span></a>  <span class="s0">/** 
+<a name="l163"><span class="ln">163  </span></a>   * i18n support 
+<a name="l164"><span class="ln">164  </span></a>   */</span>
+<a name="l165"><span class="ln">165  </span></a>  <span class="s1">TRANSLATIONS : {},</span>
+<a name="l166"><span class="ln">166  </span></a>  <span class="s1">PLURAL_EXPR : </span><span class="s2">function</span><span class="s1">(n) { </span><span class="s2">return </span><span class="s1">n === </span><span class="s4">1 </span><span class="s1">? </span><span class="s4">0 </span><span class="s1">: </span><span class="s4">1</span><span class="s1">; },</span>
+<a name="l167"><span class="ln">167  </span></a>  <span class="s1">LOCALE : </span><span class="s3">'unknown'</span><span class="s1">,</span>
+<a name="l168"><span class="ln">168  </span></a>
+<a name="l169"><span class="ln">169  </span></a>  <span class="s0">// gettext and ngettext don't access this so that the functions</span>
+<a name="l170"><span class="ln">170  </span></a>  <span class="s0">// can safely bound to a different name (_ = Documentation.gettext)</span>
+<a name="l171"><span class="ln">171  </span></a>  <span class="s1">gettext : </span><span class="s2">function</span><span class="s1">(string) {</span>
+<a name="l172"><span class="ln">172  </span></a>    <span class="s2">var </span><span class="s1">translated = Documentation.TRANSLATIONS[string];</span>
+<a name="l173"><span class="ln">173  </span></a>    <span class="s2">if </span><span class="s1">(</span><span class="s2">typeof </span><span class="s1">translated === </span><span class="s3">'undefined'</span><span class="s1">)</span>
+<a name="l174"><span class="ln">174  </span></a>      <span class="s2">return </span><span class="s1">string;</span>
+<a name="l175"><span class="ln">175  </span></a>    <span class="s2">return </span><span class="s1">(</span><span class="s2">typeof </span><span class="s1">translated === </span><span class="s3">'string'</span><span class="s1">) ? translated : translated[</span><span class="s4">0</span><span class="s1">];</span>
+<a name="l176"><span class="ln">176  </span></a>  <span class="s1">},</span>
+<a name="l177"><span class="ln">177  </span></a>
+<a name="l178"><span class="ln">178  </span></a>  <span class="s1">ngettext : </span><span class="s2">function</span><span class="s1">(singular, plural, n) {</span>
+<a name="l179"><span class="ln">179  </span></a>    <span class="s2">var </span><span class="s1">translated = Documentation.TRANSLATIONS[singular];</span>
+<a name="l180"><span class="ln">180  </span></a>    <span class="s2">if </span><span class="s1">(</span><span class="s2">typeof </span><span class="s1">translated === </span><span class="s3">'undefined'</span><span class="s1">)</span>
+<a name="l181"><span class="ln">181  </span></a>      <span class="s2">return </span><span class="s1">(n == </span><span class="s4">1</span><span class="s1">) ? singular : plural;</span>
+<a name="l182"><span class="ln">182  </span></a>    <span class="s2">return </span><span class="s1">translated[Documentation.PLURALEXPR(n)];</span>
+<a name="l183"><span class="ln">183  </span></a>  <span class="s1">},</span>
+<a name="l184"><span class="ln">184  </span></a>
+<a name="l185"><span class="ln">185  </span></a>  <span class="s1">addTranslations : </span><span class="s2">function</span><span class="s1">(catalog) {</span>
+<a name="l186"><span class="ln">186  </span></a>    <span class="s2">for </span><span class="s1">(</span><span class="s2">var </span><span class="s1">key </span><span class="s2">in </span><span class="s1">catalog.messages)</span>
+<a name="l187"><span class="ln">187  </span></a>      <span class="s2">this</span><span class="s1">.TRANSLATIONS[key] = catalog.messages[key];</span>
+<a name="l188"><span class="ln">188  </span></a>    <span class="s2">this</span><span class="s1">.PLURAL_EXPR = </span><span class="s2">new </span><span class="s1">Function(</span><span class="s3">'n'</span><span class="s1">, </span><span class="s3">'return +(' </span><span class="s1">+ catalog.plural_expr + </span><span class="s3">')'</span><span class="s1">);</span>
+<a name="l189"><span class="ln">189  </span></a>    <span class="s2">this</span><span class="s1">.LOCALE = catalog.locale;</span>
+<a name="l190"><span class="ln">190  </span></a>  <span class="s1">},</span>
+<a name="l191"><span class="ln">191  </span></a>
+<a name="l192"><span class="ln">192  </span></a>  <span class="s0">/** 
+<a name="l193"><span class="ln">193  </span></a>   * add context elements like header anchor links 
+<a name="l194"><span class="ln">194  </span></a>   */</span>
+<a name="l195"><span class="ln">195  </span></a>  <span class="s1">addContextElements : </span><span class="s2">function</span><span class="s1">() {</span>
+<a name="l196"><span class="ln">196  </span></a>    <span class="s1">$(</span><span class="s3">'div[id] &gt; :header:first'</span><span class="s1">).each(</span><span class="s2">function</span><span class="s1">() {</span>
+<a name="l197"><span class="ln">197  </span></a>      <span class="s1">$(</span><span class="s3">'&lt;a class=&quot;headerlink&quot;&gt;</span><span class="s5">\u00B6</span><span class="s3">&lt;/a&gt;'</span><span class="s1">).</span>
+<a name="l198"><span class="ln">198  </span></a>      <span class="s1">attr(</span><span class="s3">'href'</span><span class="s1">, </span><span class="s3">'#' </span><span class="s1">+ </span><span class="s2">this</span><span class="s1">.id).</span>
+<a name="l199"><span class="ln">199  </span></a>      <span class="s1">attr(</span><span class="s3">'title'</span><span class="s1">, _(</span><span class="s3">'Permalink to this headline'</span><span class="s1">)).</span>
+<a name="l200"><span class="ln">200  </span></a>      <span class="s1">appendTo(</span><span class="s2">this</span><span class="s1">);</span>
+<a name="l201"><span class="ln">201  </span></a>    <span class="s1">});</span>
+<a name="l202"><span class="ln">202  </span></a>    <span class="s1">$(</span><span class="s3">'dt[id]'</span><span class="s1">).each(</span><span class="s2">function</span><span class="s1">() {</span>
+<a name="l203"><span class="ln">203  </span></a>      <span class="s1">$(</span><span class="s3">'&lt;a class=&quot;headerlink&quot;&gt;</span><span class="s5">\u00B6</span><span class="s3">&lt;/a&gt;'</span><span class="s1">).</span>
+<a name="l204"><span class="ln">204  </span></a>      <span class="s1">attr(</span><span class="s3">'href'</span><span class="s1">, </span><span class="s3">'#' </span><span class="s1">+ </span><span class="s2">this</span><span class="s1">.id).</span>
+<a name="l205"><span class="ln">205  </span></a>      <span class="s1">attr(</span><span class="s3">'title'</span><span class="s1">, _(</span><span class="s3">'Permalink to this definition'</span><span class="s1">)).</span>
+<a name="l206"><span class="ln">206  </span></a>      <span class="s1">appendTo(</span><span class="s2">this</span><span class="s1">);</span>
+<a name="l207"><span class="ln">207  </span></a>    <span class="s1">});</span>
+<a name="l208"><span class="ln">208  </span></a>  <span class="s1">},</span>
+<a name="l209"><span class="ln">209  </span></a>
+<a name="l210"><span class="ln">210  </span></a>  <span class="s0">/** 
+<a name="l211"><span class="ln">211  </span></a>   * workaround a firefox stupidity 
+<a name="l212"><span class="ln">212  </span></a>   * see: https://bugzilla.mozilla.org/show_bug.cgi?id=645075 
+<a name="l213"><span class="ln">213  </span></a>   */</span>
+<a name="l214"><span class="ln">214  </span></a>  <span class="s1">fixFirefoxAnchorBug : </span><span class="s2">function</span><span class="s1">() {</span>
+<a name="l215"><span class="ln">215  </span></a>    <span class="s2">if </span><span class="s1">(document.location.hash &amp;&amp; $.browser.mozilla)</span>
+<a name="l216"><span class="ln">216  </span></a>      <span class="s1">window.setTimeout(</span><span class="s2">function</span><span class="s1">() {</span>
+<a name="l217"><span class="ln">217  </span></a>        <span class="s1">document.location.href += </span><span class="s3">''</span><span class="s1">;</span>
+<a name="l218"><span class="ln">218  </span></a>      <span class="s1">}, </span><span class="s4">10</span><span class="s1">);</span>
+<a name="l219"><span class="ln">219  </span></a>  <span class="s1">},</span>
+<a name="l220"><span class="ln">220  </span></a>
+<a name="l221"><span class="ln">221  </span></a>  <span class="s0">/** 
+<a name="l222"><span class="ln">222  </span></a>   * highlight the search words provided in the url in the text 
+<a name="l223"><span class="ln">223  </span></a>   */</span>
+<a name="l224"><span class="ln">224  </span></a>  <span class="s1">highlightSearchWords : </span><span class="s2">function</span><span class="s1">() {</span>
+<a name="l225"><span class="ln">225  </span></a>    <span class="s2">var </span><span class="s1">params = $.getQueryParameters();</span>
+<a name="l226"><span class="ln">226  </span></a>    <span class="s2">var </span><span class="s1">terms = (params.highlight) ? params.highlight[</span><span class="s4">0</span><span class="s1">].split(/\s+/) : [];</span>
+<a name="l227"><span class="ln">227  </span></a>    <span class="s2">if </span><span class="s1">(terms.length) {</span>
+<a name="l228"><span class="ln">228  </span></a>      <span class="s2">var </span><span class="s1">body = $(</span><span class="s3">'div.body'</span><span class="s1">);</span>
+<a name="l229"><span class="ln">229  </span></a>      <span class="s2">if </span><span class="s1">(!body.length) {</span>
+<a name="l230"><span class="ln">230  </span></a>        <span class="s1">body = $(</span><span class="s3">'body'</span><span class="s1">);</span>
+<a name="l231"><span class="ln">231  </span></a>      <span class="s1">}</span>
+<a name="l232"><span class="ln">232  </span></a>      <span class="s1">window.setTimeout(</span><span class="s2">function</span><span class="s1">() {</span>
+<a name="l233"><span class="ln">233  </span></a>        <span class="s1">$.each(terms, </span><span class="s2">function</span><span class="s1">() {</span>
+<a name="l234"><span class="ln">234  </span></a>          <span class="s1">body.highlightText(</span><span class="s2">this</span><span class="s1">.toLowerCase(), </span><span class="s3">'highlighted'</span><span class="s1">);</span>
+<a name="l235"><span class="ln">235  </span></a>        <span class="s1">});</span>
+<a name="l236"><span class="ln">236  </span></a>      <span class="s1">}, </span><span class="s4">10</span><span class="s1">);</span>
+<a name="l237"><span class="ln">237  </span></a>      <span class="s1">$(</span><span class="s3">'&lt;p class=&quot;highlight-link&quot;&gt;&lt;a href=&quot;javascript:Documentation.' </span><span class="s1">+</span>
+<a name="l238"><span class="ln">238  </span></a>        <span class="s3">'hideSearchWords()&quot;&gt;' </span><span class="s1">+ _(</span><span class="s3">'Hide Search Matches'</span><span class="s1">) + </span><span class="s3">'&lt;/a&gt;&lt;/p&gt;'</span><span class="s1">)</span>
+<a name="l239"><span class="ln">239  </span></a>          <span class="s1">.appendTo($(</span><span class="s3">'#searchbox'</span><span class="s1">));</span>
+<a name="l240"><span class="ln">240  </span></a>    <span class="s1">}</span>
+<a name="l241"><span class="ln">241  </span></a>  <span class="s1">},</span>
+<a name="l242"><span class="ln">242  </span></a>
+<a name="l243"><span class="ln">243  </span></a>  <span class="s0">/** 
+<a name="l244"><span class="ln">244  </span></a>   * init the domain index toggle buttons 
+<a name="l245"><span class="ln">245  </span></a>   */</span>
+<a name="l246"><span class="ln">246  </span></a>  <span class="s1">initIndexTable : </span><span class="s2">function</span><span class="s1">() {</span>
+<a name="l247"><span class="ln">247  </span></a>    <span class="s2">var </span><span class="s1">togglers = $(</span><span class="s3">'img.toggler'</span><span class="s1">).click(</span><span class="s2">function</span><span class="s1">() {</span>
+<a name="l248"><span class="ln">248  </span></a>      <span class="s2">var </span><span class="s1">src = $(</span><span class="s2">this</span><span class="s1">).attr(</span><span class="s3">'src'</span><span class="s1">);</span>
+<a name="l249"><span class="ln">249  </span></a>      <span class="s2">var </span><span class="s1">idnum = $(</span><span class="s2">this</span><span class="s1">).attr(</span><span class="s3">'id'</span><span class="s1">).substr(</span><span class="s4">7</span><span class="s1">);</span>
+<a name="l250"><span class="ln">250  </span></a>      <span class="s1">$(</span><span class="s3">'tr.cg-' </span><span class="s1">+ idnum).toggle();</span>
+<a name="l251"><span class="ln">251  </span></a>      <span class="s2">if </span><span class="s1">(src.substr(-</span><span class="s4">9</span><span class="s1">) === </span><span class="s3">'minus.png'</span><span class="s1">)</span>
+<a name="l252"><span class="ln">252  </span></a>        <span class="s1">$(</span><span class="s2">this</span><span class="s1">).attr(</span><span class="s3">'src'</span><span class="s1">, src.substr(</span><span class="s4">0</span><span class="s1">, src.length-9) + </span><span class="s3">'plus.png'</span><span class="s1">);</span>
+<a name="l253"><span class="ln">253  </span></a>      <span class="s2">else</span>
+<a name="l254"><span class="ln">254  </span></a>        <span class="s1">$(</span><span class="s2">this</span><span class="s1">).attr(</span><span class="s3">'src'</span><span class="s1">, src.substr(</span><span class="s4">0</span><span class="s1">, src.length-8) + </span><span class="s3">'minus.png'</span><span class="s1">);</span>
+<a name="l255"><span class="ln">255  </span></a>    <span class="s1">}).css(</span><span class="s3">'display'</span><span class="s1">, </span><span class="s3">''</span><span class="s1">);</span>
+<a name="l256"><span class="ln">256  </span></a>    <span class="s2">if </span><span class="s1">(DOCUMENTATION_OPTIONS.COLLAPSE_INDEX) {</span>
+<a name="l257"><span class="ln">257  </span></a>        <span class="s1">togglers.click();</span>
+<a name="l258"><span class="ln">258  </span></a>    <span class="s1">}</span>
+<a name="l259"><span class="ln">259  </span></a>  <span class="s1">},</span>
+<a name="l260"><span class="ln">260  </span></a>
+<a name="l261"><span class="ln">261  </span></a>  <span class="s0">/** 
+<a name="l262"><span class="ln">262  </span></a>   * helper function to hide the search marks again 
+<a name="l263"><span class="ln">263  </span></a>   */</span>
+<a name="l264"><span class="ln">264  </span></a>  <span class="s1">hideSearchWords : </span><span class="s2">function</span><span class="s1">() {</span>
+<a name="l265"><span class="ln">265  </span></a>    <span class="s1">$(</span><span class="s3">'#searchbox .highlight-link'</span><span class="s1">).fadeOut(</span><span class="s4">300</span><span class="s1">);</span>
+<a name="l266"><span class="ln">266  </span></a>    <span class="s1">$(</span><span class="s3">'span.highlighted'</span><span class="s1">).removeClass(</span><span class="s3">'highlighted'</span><span class="s1">);</span>
+<a name="l267"><span class="ln">267  </span></a>  <span class="s1">},</span>
+<a name="l268"><span class="ln">268  </span></a>
+<a name="l269"><span class="ln">269  </span></a>  <span class="s0">/** 
+<a name="l270"><span class="ln">270  </span></a>   * make the url absolute 
+<a name="l271"><span class="ln">271  </span></a>   */</span>
+<a name="l272"><span class="ln">272  </span></a>  <span class="s1">makeURL : </span><span class="s2">function</span><span class="s1">(relativeURL) {</span>
+<a name="l273"><span class="ln">273  </span></a>    <span class="s2">return </span><span class="s1">DOCUMENTATION_OPTIONS.URL_ROOT + </span><span class="s3">'/' </span><span class="s1">+ relativeURL;</span>
+<a name="l274"><span class="ln">274  </span></a>  <span class="s1">},</span>
+<a name="l275"><span class="ln">275  </span></a>
+<a name="l276"><span class="ln">276  </span></a>  <span class="s0">/** 
+<a name="l277"><span class="ln">277  </span></a>   * get the current relative url 
+<a name="l278"><span class="ln">278  </span></a>   */</span>
+<a name="l279"><span class="ln">279  </span></a>  <span class="s1">getCurrentURL : </span><span class="s2">function</span><span class="s1">() {</span>
+<a name="l280"><span class="ln">280  </span></a>    <span class="s2">var </span><span class="s1">path = document.location.pathname;</span>
+<a name="l281"><span class="ln">281  </span></a>    <span class="s2">var </span><span class="s1">parts = path.split(/\</span><span class="s0">//);</span>
+<a name="l282"><span class="ln">282  </span></a>    <span class="s1">$.each(DOCUMENTATION_OPTIONS.URL_ROOT.split(/\</span><span class="s0">//), function() {</span>
+<a name="l283"><span class="ln">283  </span></a>      <span class="s2">if </span><span class="s1">(</span><span class="s2">this </span><span class="s1">=== </span><span class="s3">'..'</span><span class="s1">)</span>
+<a name="l284"><span class="ln">284  </span></a>        <span class="s1">parts.pop();</span>
+<a name="l285"><span class="ln">285  </span></a>    <span class="s1">});</span>
+<a name="l286"><span class="ln">286  </span></a>    <span class="s2">var </span><span class="s1">url = parts.join(</span><span class="s3">'/'</span><span class="s1">);</span>
+<a name="l287"><span class="ln">287  </span></a>    <span class="s2">return </span><span class="s1">path.substring(url.lastIndexOf(</span><span class="s3">'/'</span><span class="s1">) + </span><span class="s4">1</span><span class="s1">, path.length - </span><span class="s4">1</span><span class="s1">);</span>
+<a name="l288"><span class="ln">288  </span></a>  <span class="s1">},</span>
+<a name="l289"><span class="ln">289  </span></a>
+<a name="l290"><span class="ln">290  </span></a>  <span class="s1">initOnKeyListeners: </span><span class="s2">function</span><span class="s1">() {</span>
+<a name="l291"><span class="ln">291  </span></a>    <span class="s1">$(document).keydown(</span><span class="s2">function</span><span class="s1">(event) {</span>
+<a name="l292"><span class="ln">292  </span></a>      <span class="s2">var </span><span class="s1">activeElementType = document.activeElement.tagName;</span>
+<a name="l293"><span class="ln">293  </span></a>      <span class="s0">// don't navigate when in search box, textarea, dropdown or button</span>
+<a name="l294"><span class="ln">294  </span></a>      <span class="s2">if </span><span class="s1">(activeElementType !== </span><span class="s3">'TEXTAREA' </span><span class="s1">&amp;&amp; activeElementType !== </span><span class="s3">'INPUT' </span><span class="s1">&amp;&amp; activeElementType !== </span><span class="s3">'SELECT'</span>
+<a name="l295"><span class="ln">295  </span></a>          <span class="s1">&amp;&amp; activeElementType !== </span><span class="s3">'BUTTON' </span><span class="s1">&amp;&amp; !event.altKey &amp;&amp; !event.ctrlKey &amp;&amp; !event.metaKey</span>
+<a name="l296"><span class="ln">296  </span></a>          <span class="s1">&amp;&amp; !event.shiftKey) {</span>
+<a name="l297"><span class="ln">297  </span></a>        <span class="s2">switch </span><span class="s1">(event.keyCode) {</span>
+<a name="l298"><span class="ln">298  </span></a>          <span class="s2">case </span><span class="s4">37</span><span class="s1">: </span><span class="s0">// left</span>
+<a name="l299"><span class="ln">299  </span></a>            <span class="s2">var </span><span class="s1">prevHref = $(</span><span class="s3">'link[rel=&quot;prev&quot;]'</span><span class="s1">).prop(</span><span class="s3">'href'</span><span class="s1">);</span>
+<a name="l300"><span class="ln">300  </span></a>            <span class="s2">if </span><span class="s1">(prevHref) {</span>
+<a name="l301"><span class="ln">301  </span></a>              <span class="s1">window.location.href = prevHref;</span>
+<a name="l302"><span class="ln">302  </span></a>              <span class="s2">return false</span><span class="s1">;</span>
+<a name="l303"><span class="ln">303  </span></a>            <span class="s1">}</span>
+<a name="l304"><span class="ln">304  </span></a>            <span class="s2">break</span><span class="s1">;</span>
+<a name="l305"><span class="ln">305  </span></a>          <span class="s2">case </span><span class="s4">39</span><span class="s1">: </span><span class="s0">// right</span>
+<a name="l306"><span class="ln">306  </span></a>            <span class="s2">var </span><span class="s1">nextHref = $(</span><span class="s3">'link[rel=&quot;next&quot;]'</span><span class="s1">).prop(</span><span class="s3">'href'</span><span class="s1">);</span>
+<a name="l307"><span class="ln">307  </span></a>            <span class="s2">if </span><span class="s1">(nextHref) {</span>
+<a name="l308"><span class="ln">308  </span></a>              <span class="s1">window.location.href = nextHref;</span>
+<a name="l309"><span class="ln">309  </span></a>              <span class="s2">return false</span><span class="s1">;</span>
+<a name="l310"><span class="ln">310  </span></a>            <span class="s1">}</span>
+<a name="l311"><span class="ln">311  </span></a>            <span class="s2">break</span><span class="s1">;</span>
+<a name="l312"><span class="ln">312  </span></a>        <span class="s1">}</span>
+<a name="l313"><span class="ln">313  </span></a>      <span class="s1">}</span>
+<a name="l314"><span class="ln">314  </span></a>    <span class="s1">});</span>
+<a name="l315"><span class="ln">315  </span></a>  <span class="s1">}</span>
+<a name="l316"><span class="ln">316  </span></a><span class="s1">};</span>
+<a name="l317"><span class="ln">317  </span></a>
+<a name="l318"><span class="ln">318  </span></a><span class="s0">// quick alias for translations</span>
+<a name="l319"><span class="ln">319  </span></a><span class="s1">_ = Documentation.gettext;</span>
+<a name="l320"><span class="ln">320  </span></a>
+<a name="l321"><span class="ln">321  </span></a><span class="s1">$(document).ready(</span><span class="s2">function</span><span class="s1">() {</span>
+<a name="l322"><span class="ln">322  </span></a>  <span class="s1">Documentation.init();</span>
+<a name="l323"><span class="ln">323  </span></a><span class="s1">});</span>
+<a name="l324"><span class="ln">324  </span></a></pre>
+</body>
+</html>

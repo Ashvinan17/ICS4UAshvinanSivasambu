@@ -1,0 +1,133 @@
+<html>
+<head>
+<title>key_test.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cc7832;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #808080;}
+.s3 { color: #629755; font-style: italic;}
+.s4 { color: #6a8759;}
+.s5 { color: #6897bb;}
+.ln { color: #606366; font-weight: normal; font-style: normal; }
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+key_test.py</font>
+</center></td></tr></table>
+<pre><a name="l1"><span class="ln">1    </span></a><span class="s0">import </span><span class="s1">os</span>
+<a name="l2"><span class="ln">2    </span></a><span class="s0">import </span><span class="s1">sys</span>
+<a name="l3"><span class="ln">3    </span></a><span class="s0">import </span><span class="s1">time</span>
+<a name="l4"><span class="ln">4    </span></a><span class="s0">import </span><span class="s1">unittest</span>
+<a name="l5"><span class="ln">5    </span></a><span class="s0">import </span><span class="s1">pygame</span>
+<a name="l6"><span class="ln">6    </span></a><span class="s0">import </span><span class="s1">pygame.key</span>
+<a name="l7"><span class="ln">7    </span></a>
+<a name="l8"><span class="ln">8    </span></a>
+<a name="l9"><span class="ln">9    </span></a><span class="s0">class </span><span class="s1">KeyModuleTest(unittest.TestCase):</span>
+<a name="l10"><span class="ln">10   </span></a>    <span class="s1">@classmethod</span>
+<a name="l11"><span class="ln">11   </span></a>    <span class="s0">def </span><span class="s1">setUpClass(cls):</span>
+<a name="l12"><span class="ln">12   </span></a>        <span class="s1">pygame.init()</span>
+<a name="l13"><span class="ln">13   </span></a>
+<a name="l14"><span class="ln">14   </span></a>    <span class="s1">@classmethod</span>
+<a name="l15"><span class="ln">15   </span></a>    <span class="s0">def </span><span class="s1">tearDownClass(cls):</span>
+<a name="l16"><span class="ln">16   </span></a>        <span class="s1">pygame.quit()</span>
+<a name="l17"><span class="ln">17   </span></a>
+<a name="l18"><span class="ln">18   </span></a>    <span class="s0">def </span><span class="s1">setUp(cls):</span>
+<a name="l19"><span class="ln">19   </span></a>        <span class="s2"># This makes sure pygame is always initialized before each test (in</span>
+<a name="l20"><span class="ln">20   </span></a>        <span class="s2"># case a test calls pygame.quit()).</span>
+<a name="l21"><span class="ln">21   </span></a>        <span class="s0">if not </span><span class="s1">pygame.get_init():</span>
+<a name="l22"><span class="ln">22   </span></a>            <span class="s1">pygame.init()</span>
+<a name="l23"><span class="ln">23   </span></a>        <span class="s0">if not </span><span class="s1">pygame.display.get_init():</span>
+<a name="l24"><span class="ln">24   </span></a>            <span class="s1">pygame.display.init()</span>
+<a name="l25"><span class="ln">25   </span></a>
+<a name="l26"><span class="ln">26   </span></a>    <span class="s0">def </span><span class="s1">test_import(self):</span>
+<a name="l27"><span class="ln">27   </span></a>        <span class="s3">&quot;&quot;&quot;does it import?&quot;&quot;&quot;</span>
+<a name="l28"><span class="ln">28   </span></a>        <span class="s0">import </span><span class="s1">pygame.key</span>
+<a name="l29"><span class="ln">29   </span></a>
+<a name="l30"><span class="ln">30   </span></a>    <span class="s2"># fixme: test_get_focused failing systematically in some linux</span>
+<a name="l31"><span class="ln">31   </span></a>    <span class="s2"># fixme: test_get_focused failing on SDL 2.0.18 on Windows</span>
+<a name="l32"><span class="ln">32   </span></a>    <span class="s1">@unittest.skip(</span><span class="s4">&quot;flaky test, and broken on 2.0.18 windows&quot;</span><span class="s1">)</span>
+<a name="l33"><span class="ln">33   </span></a>    <span class="s0">def </span><span class="s1">test_get_focused(self):</span>
+<a name="l34"><span class="ln">34   </span></a>        <span class="s2"># This test fails in SDL2 in some linux</span>
+<a name="l35"><span class="ln">35   </span></a>        <span class="s2"># This test was skipped in SDL1.</span>
+<a name="l36"><span class="ln">36   </span></a>        <span class="s1">focused = pygame.key.get_focused()</span>
+<a name="l37"><span class="ln">37   </span></a>        <span class="s1">self.assertFalse(focused)  </span><span class="s2"># No window to focus</span>
+<a name="l38"><span class="ln">38   </span></a>        <span class="s1">self.assertIsInstance(focused</span><span class="s0">, </span><span class="s1">int)</span>
+<a name="l39"><span class="ln">39   </span></a>        <span class="s2"># Dummy video driver never gets keyboard focus.</span>
+<a name="l40"><span class="ln">40   </span></a>        <span class="s0">if </span><span class="s1">os.environ.get(</span><span class="s4">&quot;SDL_VIDEODRIVER&quot;</span><span class="s1">) != </span><span class="s4">&quot;dummy&quot;</span><span class="s1">:</span>
+<a name="l41"><span class="ln">41   </span></a>            <span class="s2"># Positive test, fullscreen with events grabbed</span>
+<a name="l42"><span class="ln">42   </span></a>            <span class="s1">display_sizes = pygame.display.list_modes()</span>
+<a name="l43"><span class="ln">43   </span></a>            <span class="s0">if </span><span class="s1">display_sizes == -</span><span class="s5">1</span><span class="s1">:</span>
+<a name="l44"><span class="ln">44   </span></a>                <span class="s1">display_sizes = [(</span><span class="s5">500</span><span class="s0">, </span><span class="s5">500</span><span class="s1">)]</span>
+<a name="l45"><span class="ln">45   </span></a>            <span class="s1">pygame.display.set_mode(size=display_sizes[-</span><span class="s5">1</span><span class="s1">]</span><span class="s0">, </span><span class="s1">flags=pygame.FULLSCREEN)</span>
+<a name="l46"><span class="ln">46   </span></a>            <span class="s1">pygame.event.set_grab(</span><span class="s0">True</span><span class="s1">)</span>
+<a name="l47"><span class="ln">47   </span></a>            <span class="s2"># Pump event queue to get window focus on macos</span>
+<a name="l48"><span class="ln">48   </span></a>            <span class="s1">pygame.event.pump()</span>
+<a name="l49"><span class="ln">49   </span></a>            <span class="s1">focused = pygame.key.get_focused()</span>
+<a name="l50"><span class="ln">50   </span></a>            <span class="s1">self.assertIsInstance(focused</span><span class="s0">, </span><span class="s1">int)</span>
+<a name="l51"><span class="ln">51   </span></a>            <span class="s1">self.assertTrue(focused)</span>
+<a name="l52"><span class="ln">52   </span></a>            <span class="s2"># Now test negative, iconify takes away focus</span>
+<a name="l53"><span class="ln">53   </span></a>            <span class="s1">pygame.event.clear()</span>
+<a name="l54"><span class="ln">54   </span></a>            <span class="s2"># TODO: iconify test fails in windows</span>
+<a name="l55"><span class="ln">55   </span></a>            <span class="s0">if </span><span class="s1">os.name != </span><span class="s4">&quot;nt&quot;</span><span class="s1">:</span>
+<a name="l56"><span class="ln">56   </span></a>                <span class="s1">pygame.display.iconify()</span>
+<a name="l57"><span class="ln">57   </span></a>                <span class="s2"># Apparent need to pump event queue in order to make sure iconify</span>
+<a name="l58"><span class="ln">58   </span></a>                <span class="s2"># happens. See display_test.py's test_get_active_iconify</span>
+<a name="l59"><span class="ln">59   </span></a>                <span class="s0">for </span><span class="s1">_ </span><span class="s0">in </span><span class="s1">range(</span><span class="s5">50</span><span class="s1">):</span>
+<a name="l60"><span class="ln">60   </span></a>                    <span class="s1">time.sleep(</span><span class="s5">0.01</span><span class="s1">)</span>
+<a name="l61"><span class="ln">61   </span></a>                    <span class="s1">pygame.event.pump()</span>
+<a name="l62"><span class="ln">62   </span></a>                <span class="s1">self.assertFalse(pygame.key.get_focused())</span>
+<a name="l63"><span class="ln">63   </span></a>                <span class="s2"># Test if focus is returned when iconify is gone</span>
+<a name="l64"><span class="ln">64   </span></a>                <span class="s1">pygame.display.set_mode(size=display_sizes[-</span><span class="s5">1</span><span class="s1">]</span><span class="s0">, </span><span class="s1">flags=pygame.FULLSCREEN)</span>
+<a name="l65"><span class="ln">65   </span></a>                <span class="s0">for </span><span class="s1">i </span><span class="s0">in </span><span class="s1">range(</span><span class="s5">50</span><span class="s1">):</span>
+<a name="l66"><span class="ln">66   </span></a>                    <span class="s1">time.sleep(</span><span class="s5">0.01</span><span class="s1">)</span>
+<a name="l67"><span class="ln">67   </span></a>                    <span class="s1">pygame.event.pump()</span>
+<a name="l68"><span class="ln">68   </span></a>                <span class="s1">self.assertTrue(pygame.key.get_focused())</span>
+<a name="l69"><span class="ln">69   </span></a>        <span class="s2"># Test if a quit display raises an error:</span>
+<a name="l70"><span class="ln">70   </span></a>        <span class="s1">pygame.display.quit()</span>
+<a name="l71"><span class="ln">71   </span></a>        <span class="s0">with </span><span class="s1">self.assertRaises(pygame.error) </span><span class="s0">as </span><span class="s1">cm:</span>
+<a name="l72"><span class="ln">72   </span></a>            <span class="s1">pygame.key.get_focused()</span>
+<a name="l73"><span class="ln">73   </span></a>
+<a name="l74"><span class="ln">74   </span></a>    <span class="s0">def </span><span class="s1">test_get_pressed(self):</span>
+<a name="l75"><span class="ln">75   </span></a>        <span class="s1">states = pygame.key.get_pressed()</span>
+<a name="l76"><span class="ln">76   </span></a>        <span class="s1">self.assertEqual(states[pygame.K_RIGHT]</span><span class="s0">, </span><span class="s5">0</span><span class="s1">)</span>
+<a name="l77"><span class="ln">77   </span></a>
+<a name="l78"><span class="ln">78   </span></a>    <span class="s0">def </span><span class="s1">test_name(self):</span>
+<a name="l79"><span class="ln">79   </span></a>        <span class="s1">self.assertEqual(pygame.key.name(pygame.K_RETURN)</span><span class="s0">, </span><span class="s4">&quot;return&quot;</span><span class="s1">)</span>
+<a name="l80"><span class="ln">80   </span></a>        <span class="s1">self.assertEqual(pygame.key.name(pygame.K_0)</span><span class="s0">, </span><span class="s4">&quot;0&quot;</span><span class="s1">)</span>
+<a name="l81"><span class="ln">81   </span></a>        <span class="s1">self.assertEqual(pygame.key.name(pygame.K_SPACE)</span><span class="s0">, </span><span class="s4">&quot;space&quot;</span><span class="s1">)</span>
+<a name="l82"><span class="ln">82   </span></a>
+<a name="l83"><span class="ln">83   </span></a>    <span class="s0">def </span><span class="s1">test_key_code(self):</span>
+<a name="l84"><span class="ln">84   </span></a>        <span class="s1">self.assertEqual(pygame.key.key_code(</span><span class="s4">&quot;return&quot;</span><span class="s1">)</span><span class="s0">, </span><span class="s1">pygame.K_RETURN)</span>
+<a name="l85"><span class="ln">85   </span></a>        <span class="s1">self.assertEqual(pygame.key.key_code(</span><span class="s4">&quot;0&quot;</span><span class="s1">)</span><span class="s0">, </span><span class="s1">pygame.K_0)</span>
+<a name="l86"><span class="ln">86   </span></a>        <span class="s1">self.assertEqual(pygame.key.key_code(</span><span class="s4">&quot;space&quot;</span><span class="s1">)</span><span class="s0">, </span><span class="s1">pygame.K_SPACE)</span>
+<a name="l87"><span class="ln">87   </span></a>
+<a name="l88"><span class="ln">88   </span></a>        <span class="s1">self.assertRaises(ValueError</span><span class="s0">, </span><span class="s1">pygame.key.key_code</span><span class="s0">, </span><span class="s4">&quot;fizzbuzz&quot;</span><span class="s1">)</span>
+<a name="l89"><span class="ln">89   </span></a>
+<a name="l90"><span class="ln">90   </span></a>    <span class="s0">def </span><span class="s1">test_set_and_get_mods(self):</span>
+<a name="l91"><span class="ln">91   </span></a>        <span class="s1">pygame.key.set_mods(pygame.KMOD_CTRL)</span>
+<a name="l92"><span class="ln">92   </span></a>        <span class="s1">self.assertEqual(pygame.key.get_mods()</span><span class="s0">, </span><span class="s1">pygame.KMOD_CTRL)</span>
+<a name="l93"><span class="ln">93   </span></a>
+<a name="l94"><span class="ln">94   </span></a>        <span class="s1">pygame.key.set_mods(pygame.KMOD_ALT)</span>
+<a name="l95"><span class="ln">95   </span></a>        <span class="s1">self.assertEqual(pygame.key.get_mods()</span><span class="s0">, </span><span class="s1">pygame.KMOD_ALT)</span>
+<a name="l96"><span class="ln">96   </span></a>        <span class="s1">pygame.key.set_mods(pygame.KMOD_CTRL | pygame.KMOD_ALT)</span>
+<a name="l97"><span class="ln">97   </span></a>        <span class="s1">self.assertEqual(pygame.key.get_mods()</span><span class="s0">, </span><span class="s1">pygame.KMOD_CTRL | pygame.KMOD_ALT)</span>
+<a name="l98"><span class="ln">98   </span></a>
+<a name="l99"><span class="ln">99   </span></a>    <span class="s0">def </span><span class="s1">test_set_and_get_repeat(self):</span>
+<a name="l100"><span class="ln">100  </span></a>        <span class="s1">self.assertEqual(pygame.key.get_repeat()</span><span class="s0">, </span><span class="s1">(</span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s1">))</span>
+<a name="l101"><span class="ln">101  </span></a>
+<a name="l102"><span class="ln">102  </span></a>        <span class="s1">pygame.key.set_repeat(</span><span class="s5">10</span><span class="s0">, </span><span class="s5">15</span><span class="s1">)</span>
+<a name="l103"><span class="ln">103  </span></a>        <span class="s1">self.assertEqual(pygame.key.get_repeat()</span><span class="s0">, </span><span class="s1">(</span><span class="s5">10</span><span class="s0">, </span><span class="s5">15</span><span class="s1">))</span>
+<a name="l104"><span class="ln">104  </span></a>
+<a name="l105"><span class="ln">105  </span></a>        <span class="s1">pygame.key.set_repeat()</span>
+<a name="l106"><span class="ln">106  </span></a>        <span class="s1">self.assertEqual(pygame.key.get_repeat()</span><span class="s0">, </span><span class="s1">(</span><span class="s5">0</span><span class="s0">, </span><span class="s5">0</span><span class="s1">))</span>
+<a name="l107"><span class="ln">107  </span></a>
+<a name="l108"><span class="ln">108  </span></a>
+<a name="l109"><span class="ln">109  </span></a><span class="s0">if </span><span class="s1">__name__ == </span><span class="s4">&quot;__main__&quot;</span><span class="s1">:</span>
+<a name="l110"><span class="ln">110  </span></a>    <span class="s1">unittest.main()</span>
+<a name="l111"><span class="ln">111  </span></a></pre>
+</body>
+</html>

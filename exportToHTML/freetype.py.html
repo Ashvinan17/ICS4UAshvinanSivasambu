@@ -1,0 +1,100 @@
+<html>
+<head>
+<title>freetype.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #629755; font-style: italic;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #cc7832;}
+.s3 { color: #6a8759;}
+.s4 { color: #6897bb;}
+.ln { color: #606366; font-weight: normal; font-style: normal; }
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+freetype.py</font>
+</center></td></tr></table>
+<pre><a name="l1"><span class="ln">1    </span></a><span class="s0">&quot;&quot;&quot;Enhanced Pygame module for loading and rendering computer fonts&quot;&quot;&quot;</span>
+<a name="l2"><span class="ln">2    </span></a>
+<a name="l3"><span class="ln">3    </span></a><span class="s2">from </span><span class="s1">pygame._freetype </span><span class="s2">import </span><span class="s1">(</span>
+<a name="l4"><span class="ln">4    </span></a>    <span class="s1">Font</span><span class="s2">,</span>
+<a name="l5"><span class="ln">5    </span></a>    <span class="s1">STYLE_NORMAL</span><span class="s2">,</span>
+<a name="l6"><span class="ln">6    </span></a>    <span class="s1">STYLE_OBLIQUE</span><span class="s2">,</span>
+<a name="l7"><span class="ln">7    </span></a>    <span class="s1">STYLE_STRONG</span><span class="s2">,</span>
+<a name="l8"><span class="ln">8    </span></a>    <span class="s1">STYLE_UNDERLINE</span><span class="s2">,</span>
+<a name="l9"><span class="ln">9    </span></a>    <span class="s1">STYLE_WIDE</span><span class="s2">,</span>
+<a name="l10"><span class="ln">10   </span></a>    <span class="s1">STYLE_DEFAULT</span><span class="s2">,</span>
+<a name="l11"><span class="ln">11   </span></a>    <span class="s1">init</span><span class="s2">,</span>
+<a name="l12"><span class="ln">12   </span></a>    <span class="s1">quit</span><span class="s2">,</span>
+<a name="l13"><span class="ln">13   </span></a>    <span class="s1">get_init</span><span class="s2">,</span>
+<a name="l14"><span class="ln">14   </span></a>    <span class="s1">was_init</span><span class="s2">,</span>
+<a name="l15"><span class="ln">15   </span></a>    <span class="s1">get_cache_size</span><span class="s2">,</span>
+<a name="l16"><span class="ln">16   </span></a>    <span class="s1">get_default_font</span><span class="s2">,</span>
+<a name="l17"><span class="ln">17   </span></a>    <span class="s1">get_default_resolution</span><span class="s2">,</span>
+<a name="l18"><span class="ln">18   </span></a>    <span class="s1">get_error</span><span class="s2">,</span>
+<a name="l19"><span class="ln">19   </span></a>    <span class="s1">get_version</span><span class="s2">,</span>
+<a name="l20"><span class="ln">20   </span></a>    <span class="s1">set_default_resolution</span><span class="s2">,</span>
+<a name="l21"><span class="ln">21   </span></a><span class="s1">)</span>
+<a name="l22"><span class="ln">22   </span></a><span class="s2">from </span><span class="s1">pygame.sysfont </span><span class="s2">import </span><span class="s1">match_font</span><span class="s2">, </span><span class="s1">get_fonts</span><span class="s2">, </span><span class="s1">SysFont </span><span class="s2">as </span><span class="s1">_SysFont</span>
+<a name="l23"><span class="ln">23   </span></a>
+<a name="l24"><span class="ln">24   </span></a><span class="s1">__all__ = [</span>
+<a name="l25"><span class="ln">25   </span></a>    <span class="s3">&quot;Font&quot;</span><span class="s2">,</span>
+<a name="l26"><span class="ln">26   </span></a>    <span class="s3">&quot;STYLE_NORMAL&quot;</span><span class="s2">,</span>
+<a name="l27"><span class="ln">27   </span></a>    <span class="s3">&quot;STYLE_OBLIQUE&quot;</span><span class="s2">,</span>
+<a name="l28"><span class="ln">28   </span></a>    <span class="s3">&quot;STYLE_STRONG&quot;</span><span class="s2">,</span>
+<a name="l29"><span class="ln">29   </span></a>    <span class="s3">&quot;STYLE_UNDERLINE&quot;</span><span class="s2">,</span>
+<a name="l30"><span class="ln">30   </span></a>    <span class="s3">&quot;STYLE_WIDE&quot;</span><span class="s2">,</span>
+<a name="l31"><span class="ln">31   </span></a>    <span class="s3">&quot;STYLE_DEFAULT&quot;</span><span class="s2">,</span>
+<a name="l32"><span class="ln">32   </span></a>    <span class="s3">&quot;init&quot;</span><span class="s2">,</span>
+<a name="l33"><span class="ln">33   </span></a>    <span class="s3">&quot;quit&quot;</span><span class="s2">,</span>
+<a name="l34"><span class="ln">34   </span></a>    <span class="s3">&quot;get_init&quot;</span><span class="s2">,</span>
+<a name="l35"><span class="ln">35   </span></a>    <span class="s3">&quot;was_init&quot;</span><span class="s2">,</span>
+<a name="l36"><span class="ln">36   </span></a>    <span class="s3">&quot;get_cache_size&quot;</span><span class="s2">,</span>
+<a name="l37"><span class="ln">37   </span></a>    <span class="s3">&quot;get_default_font&quot;</span><span class="s2">,</span>
+<a name="l38"><span class="ln">38   </span></a>    <span class="s3">&quot;get_default_resolution&quot;</span><span class="s2">,</span>
+<a name="l39"><span class="ln">39   </span></a>    <span class="s3">&quot;get_error&quot;</span><span class="s2">,</span>
+<a name="l40"><span class="ln">40   </span></a>    <span class="s3">&quot;get_version&quot;</span><span class="s2">,</span>
+<a name="l41"><span class="ln">41   </span></a>    <span class="s3">&quot;set_default_resolution&quot;</span><span class="s2">,</span>
+<a name="l42"><span class="ln">42   </span></a>    <span class="s3">&quot;match_font&quot;</span><span class="s2">,</span>
+<a name="l43"><span class="ln">43   </span></a>    <span class="s3">&quot;get_fonts&quot;</span><span class="s2">,</span>
+<a name="l44"><span class="ln">44   </span></a><span class="s1">]</span>
+<a name="l45"><span class="ln">45   </span></a>
+<a name="l46"><span class="ln">46   </span></a>
+<a name="l47"><span class="ln">47   </span></a><span class="s2">def </span><span class="s1">SysFont(name</span><span class="s2">, </span><span class="s1">size</span><span class="s2">, </span><span class="s1">bold=</span><span class="s4">0</span><span class="s2">, </span><span class="s1">italic=</span><span class="s4">0</span><span class="s2">, </span><span class="s1">constructor=</span><span class="s2">None</span><span class="s1">):</span>
+<a name="l48"><span class="ln">48   </span></a>    <span class="s0">&quot;&quot;&quot;pygame.ftfont.SysFont(name, size, bold=False, italic=False, constructor=None) -&gt; Font 
+<a name="l49"><span class="ln">49   </span></a>    Create a pygame Font from system font resources. 
+<a name="l50"><span class="ln">50   </span></a> 
+<a name="l51"><span class="ln">51   </span></a>    This will search the system fonts for the given font 
+<a name="l52"><span class="ln">52   </span></a>    name. You can also enable bold or italic styles, and 
+<a name="l53"><span class="ln">53   </span></a>    the appropriate system font will be selected if available. 
+<a name="l54"><span class="ln">54   </span></a> 
+<a name="l55"><span class="ln">55   </span></a>    This will always return a valid Font object, and will 
+<a name="l56"><span class="ln">56   </span></a>    fallback on the builtin pygame font if the given font 
+<a name="l57"><span class="ln">57   </span></a>    is not found. 
+<a name="l58"><span class="ln">58   </span></a> 
+<a name="l59"><span class="ln">59   </span></a>    Name can also be an iterable of font names, a string of 
+<a name="l60"><span class="ln">60   </span></a>    comma-separated font names, or a bytes of comma-separated 
+<a name="l61"><span class="ln">61   </span></a>    font names, in which case the set of names will be searched 
+<a name="l62"><span class="ln">62   </span></a>    in order. Pygame uses a small set of common font aliases. If the 
+<a name="l63"><span class="ln">63   </span></a>    specific font you ask for is not available, a reasonable 
+<a name="l64"><span class="ln">64   </span></a>    alternative may be used. 
+<a name="l65"><span class="ln">65   </span></a> 
+<a name="l66"><span class="ln">66   </span></a>    If optional constructor is provided, it must be a function with 
+<a name="l67"><span class="ln">67   </span></a>    signature constructor(fontpath, size, bold, italic) which returns 
+<a name="l68"><span class="ln">68   </span></a>    a Font instance. If None, a pygame.freetype.Font object is created. 
+<a name="l69"><span class="ln">69   </span></a>    &quot;&quot;&quot;</span>
+<a name="l70"><span class="ln">70   </span></a>    <span class="s2">if </span><span class="s1">constructor </span><span class="s2">is None</span><span class="s1">:</span>
+<a name="l71"><span class="ln">71   </span></a>
+<a name="l72"><span class="ln">72   </span></a>        <span class="s2">def </span><span class="s1">constructor(fontpath</span><span class="s2">, </span><span class="s1">size</span><span class="s2">, </span><span class="s1">bold</span><span class="s2">, </span><span class="s1">italic):</span>
+<a name="l73"><span class="ln">73   </span></a>            <span class="s1">font = Font(fontpath</span><span class="s2">, </span><span class="s1">size)</span>
+<a name="l74"><span class="ln">74   </span></a>            <span class="s1">font.strong = bold</span>
+<a name="l75"><span class="ln">75   </span></a>            <span class="s1">font.oblique = italic</span>
+<a name="l76"><span class="ln">76   </span></a>            <span class="s2">return </span><span class="s1">font</span>
+<a name="l77"><span class="ln">77   </span></a>
+<a name="l78"><span class="ln">78   </span></a>    <span class="s2">return </span><span class="s1">_SysFont(name</span><span class="s2">, </span><span class="s1">size</span><span class="s2">, </span><span class="s1">bold</span><span class="s2">, </span><span class="s1">italic</span><span class="s2">, </span><span class="s1">constructor)</span>
+<a name="l79"><span class="ln">79   </span></a></pre>
+</body>
+</html>

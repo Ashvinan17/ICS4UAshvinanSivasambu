@@ -1,0 +1,284 @@
+<html>
+<head>
+<title>progress_bars.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cc7832;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #808080;}
+.s3 { color: #6a8759;}
+.s4 { color: #629755; font-style: italic;}
+.s5 { color: #6897bb;}
+.ln { color: #606366; font-weight: normal; font-style: normal; }
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+progress_bars.py</font>
+</center></td></tr></table>
+<pre><a name="l1"><span class="ln">1    </span></a><span class="s0">import </span><span class="s1">itertools</span>
+<a name="l2"><span class="ln">2    </span></a><span class="s0">import </span><span class="s1">sys</span>
+<a name="l3"><span class="ln">3    </span></a><span class="s0">from </span><span class="s1">signal </span><span class="s0">import </span><span class="s1">SIGINT</span><span class="s0">, </span><span class="s1">default_int_handler</span><span class="s0">, </span><span class="s1">signal</span>
+<a name="l4"><span class="ln">4    </span></a><span class="s0">from </span><span class="s1">typing </span><span class="s0">import </span><span class="s1">Any</span><span class="s0">, </span><span class="s1">Dict</span><span class="s0">, </span><span class="s1">List</span>
+<a name="l5"><span class="ln">5    </span></a>
+<a name="l6"><span class="ln">6    </span></a><span class="s0">from </span><span class="s1">pip._vendor.progress.bar </span><span class="s0">import </span><span class="s1">Bar</span><span class="s0">, </span><span class="s1">FillingCirclesBar</span><span class="s0">, </span><span class="s1">IncrementalBar</span>
+<a name="l7"><span class="ln">7    </span></a><span class="s0">from </span><span class="s1">pip._vendor.progress.spinner </span><span class="s0">import </span><span class="s1">Spinner</span>
+<a name="l8"><span class="ln">8    </span></a>
+<a name="l9"><span class="ln">9    </span></a><span class="s0">from </span><span class="s1">pip._internal.utils.compat </span><span class="s0">import </span><span class="s1">WINDOWS</span>
+<a name="l10"><span class="ln">10   </span></a><span class="s0">from </span><span class="s1">pip._internal.utils.logging </span><span class="s0">import </span><span class="s1">get_indentation</span>
+<a name="l11"><span class="ln">11   </span></a><span class="s0">from </span><span class="s1">pip._internal.utils.misc </span><span class="s0">import </span><span class="s1">format_size</span>
+<a name="l12"><span class="ln">12   </span></a>
+<a name="l13"><span class="ln">13   </span></a><span class="s0">try</span><span class="s1">:</span>
+<a name="l14"><span class="ln">14   </span></a>    <span class="s0">from </span><span class="s1">pip._vendor </span><span class="s0">import </span><span class="s1">colorama</span>
+<a name="l15"><span class="ln">15   </span></a><span class="s2"># Lots of different errors can come from this, including SystemError and</span>
+<a name="l16"><span class="ln">16   </span></a><span class="s2"># ImportError.</span>
+<a name="l17"><span class="ln">17   </span></a><span class="s0">except </span><span class="s1">Exception:</span>
+<a name="l18"><span class="ln">18   </span></a>    <span class="s1">colorama = </span><span class="s0">None</span>
+<a name="l19"><span class="ln">19   </span></a>
+<a name="l20"><span class="ln">20   </span></a>
+<a name="l21"><span class="ln">21   </span></a><span class="s0">def </span><span class="s1">_select_progress_class(preferred</span><span class="s0">, </span><span class="s1">fallback):</span>
+<a name="l22"><span class="ln">22   </span></a>    <span class="s2"># type: (Bar, Bar) -&gt; Bar</span>
+<a name="l23"><span class="ln">23   </span></a>    <span class="s1">encoding = getattr(preferred.file</span><span class="s0">, </span><span class="s3">&quot;encoding&quot;</span><span class="s0">, None</span><span class="s1">)</span>
+<a name="l24"><span class="ln">24   </span></a>
+<a name="l25"><span class="ln">25   </span></a>    <span class="s2"># If we don't know what encoding this file is in, then we'll just assume</span>
+<a name="l26"><span class="ln">26   </span></a>    <span class="s2"># that it doesn't support unicode and use the ASCII bar.</span>
+<a name="l27"><span class="ln">27   </span></a>    <span class="s0">if not </span><span class="s1">encoding:</span>
+<a name="l28"><span class="ln">28   </span></a>        <span class="s0">return </span><span class="s1">fallback</span>
+<a name="l29"><span class="ln">29   </span></a>
+<a name="l30"><span class="ln">30   </span></a>    <span class="s2"># Collect all of the possible characters we want to use with the preferred</span>
+<a name="l31"><span class="ln">31   </span></a>    <span class="s2"># bar.</span>
+<a name="l32"><span class="ln">32   </span></a>    <span class="s1">characters = [</span>
+<a name="l33"><span class="ln">33   </span></a>        <span class="s1">getattr(preferred</span><span class="s0">, </span><span class="s3">&quot;empty_fill&quot;</span><span class="s0">, </span><span class="s3">&quot;&quot;</span><span class="s1">)</span><span class="s0">,</span>
+<a name="l34"><span class="ln">34   </span></a>        <span class="s1">getattr(preferred</span><span class="s0">, </span><span class="s3">&quot;fill&quot;</span><span class="s0">, </span><span class="s3">&quot;&quot;</span><span class="s1">)</span><span class="s0">,</span>
+<a name="l35"><span class="ln">35   </span></a>    <span class="s1">]</span>
+<a name="l36"><span class="ln">36   </span></a>    <span class="s1">characters += list(getattr(preferred</span><span class="s0">, </span><span class="s3">&quot;phases&quot;</span><span class="s0">, </span><span class="s1">[]))</span>
+<a name="l37"><span class="ln">37   </span></a>
+<a name="l38"><span class="ln">38   </span></a>    <span class="s2"># Try to decode the characters we're using for the bar using the encoding</span>
+<a name="l39"><span class="ln">39   </span></a>    <span class="s2"># of the given file, if this works then we'll assume that we can use the</span>
+<a name="l40"><span class="ln">40   </span></a>    <span class="s2"># fancier bar and if not we'll fall back to the plaintext bar.</span>
+<a name="l41"><span class="ln">41   </span></a>    <span class="s0">try</span><span class="s1">:</span>
+<a name="l42"><span class="ln">42   </span></a>        <span class="s3">&quot;&quot;</span><span class="s1">.join(characters).encode(encoding)</span>
+<a name="l43"><span class="ln">43   </span></a>    <span class="s0">except </span><span class="s1">UnicodeEncodeError:</span>
+<a name="l44"><span class="ln">44   </span></a>        <span class="s0">return </span><span class="s1">fallback</span>
+<a name="l45"><span class="ln">45   </span></a>    <span class="s0">else</span><span class="s1">:</span>
+<a name="l46"><span class="ln">46   </span></a>        <span class="s0">return </span><span class="s1">preferred</span>
+<a name="l47"><span class="ln">47   </span></a>
+<a name="l48"><span class="ln">48   </span></a>
+<a name="l49"><span class="ln">49   </span></a><span class="s1">_BaseBar = _select_progress_class(IncrementalBar</span><span class="s0">, </span><span class="s1">Bar)  </span><span class="s2"># type: Any</span>
+<a name="l50"><span class="ln">50   </span></a>
+<a name="l51"><span class="ln">51   </span></a>
+<a name="l52"><span class="ln">52   </span></a><span class="s0">class </span><span class="s1">InterruptibleMixin:</span>
+<a name="l53"><span class="ln">53   </span></a>    <span class="s4">&quot;&quot;&quot; 
+<a name="l54"><span class="ln">54   </span></a>    Helper to ensure that self.finish() gets called on keyboard interrupt. 
+<a name="l55"><span class="ln">55   </span></a> 
+<a name="l56"><span class="ln">56   </span></a>    This allows downloads to be interrupted without leaving temporary state 
+<a name="l57"><span class="ln">57   </span></a>    (like hidden cursors) behind. 
+<a name="l58"><span class="ln">58   </span></a> 
+<a name="l59"><span class="ln">59   </span></a>    This class is similar to the progress library's existing SigIntMixin 
+<a name="l60"><span class="ln">60   </span></a>    helper, but as of version 1.2, that helper has the following problems: 
+<a name="l61"><span class="ln">61   </span></a> 
+<a name="l62"><span class="ln">62   </span></a>    1. It calls sys.exit(). 
+<a name="l63"><span class="ln">63   </span></a>    2. It discards the existing SIGINT handler completely. 
+<a name="l64"><span class="ln">64   </span></a>    3. It leaves its own handler in place even after an uninterrupted finish, 
+<a name="l65"><span class="ln">65   </span></a>       which will have unexpected delayed effects if the user triggers an 
+<a name="l66"><span class="ln">66   </span></a>       unrelated keyboard interrupt some time after a progress-displaying 
+<a name="l67"><span class="ln">67   </span></a>       download has already completed, for example. 
+<a name="l68"><span class="ln">68   </span></a>    &quot;&quot;&quot;</span>
+<a name="l69"><span class="ln">69   </span></a>
+<a name="l70"><span class="ln">70   </span></a>    <span class="s0">def </span><span class="s1">__init__(self</span><span class="s0">, </span><span class="s1">*args</span><span class="s0">, </span><span class="s1">**kwargs):</span>
+<a name="l71"><span class="ln">71   </span></a>        <span class="s2"># type: (List[Any], Dict[Any, Any]) -&gt; None</span>
+<a name="l72"><span class="ln">72   </span></a>        <span class="s4">&quot;&quot;&quot; 
+<a name="l73"><span class="ln">73   </span></a>        Save the original SIGINT handler for later. 
+<a name="l74"><span class="ln">74   </span></a>        &quot;&quot;&quot;</span>
+<a name="l75"><span class="ln">75   </span></a>        <span class="s2"># https://github.com/python/mypy/issues/5887</span>
+<a name="l76"><span class="ln">76   </span></a>        <span class="s1">super().__init__(*args</span><span class="s0">, </span><span class="s1">**kwargs)  </span><span class="s2"># type: ignore</span>
+<a name="l77"><span class="ln">77   </span></a>
+<a name="l78"><span class="ln">78   </span></a>        <span class="s1">self.original_handler = signal(SIGINT</span><span class="s0">, </span><span class="s1">self.handle_sigint)</span>
+<a name="l79"><span class="ln">79   </span></a>
+<a name="l80"><span class="ln">80   </span></a>        <span class="s2"># If signal() returns None, the previous handler was not installed from</span>
+<a name="l81"><span class="ln">81   </span></a>        <span class="s2"># Python, and we cannot restore it. This probably should not happen,</span>
+<a name="l82"><span class="ln">82   </span></a>        <span class="s2"># but if it does, we must restore something sensible instead, at least.</span>
+<a name="l83"><span class="ln">83   </span></a>        <span class="s2"># The least bad option should be Python's default SIGINT handler, which</span>
+<a name="l84"><span class="ln">84   </span></a>        <span class="s2"># just raises KeyboardInterrupt.</span>
+<a name="l85"><span class="ln">85   </span></a>        <span class="s0">if </span><span class="s1">self.original_handler </span><span class="s0">is None</span><span class="s1">:</span>
+<a name="l86"><span class="ln">86   </span></a>            <span class="s1">self.original_handler = default_int_handler</span>
+<a name="l87"><span class="ln">87   </span></a>
+<a name="l88"><span class="ln">88   </span></a>    <span class="s0">def </span><span class="s1">finish(self):</span>
+<a name="l89"><span class="ln">89   </span></a>        <span class="s2"># type: () -&gt; None</span>
+<a name="l90"><span class="ln">90   </span></a>        <span class="s4">&quot;&quot;&quot; 
+<a name="l91"><span class="ln">91   </span></a>        Restore the original SIGINT handler after finishing. 
+<a name="l92"><span class="ln">92   </span></a> 
+<a name="l93"><span class="ln">93   </span></a>        This should happen regardless of whether the progress display finishes 
+<a name="l94"><span class="ln">94   </span></a>        normally, or gets interrupted. 
+<a name="l95"><span class="ln">95   </span></a>        &quot;&quot;&quot;</span>
+<a name="l96"><span class="ln">96   </span></a>        <span class="s1">super().finish()  </span><span class="s2"># type: ignore</span>
+<a name="l97"><span class="ln">97   </span></a>        <span class="s1">signal(SIGINT</span><span class="s0">, </span><span class="s1">self.original_handler)</span>
+<a name="l98"><span class="ln">98   </span></a>
+<a name="l99"><span class="ln">99   </span></a>    <span class="s0">def </span><span class="s1">handle_sigint(self</span><span class="s0">, </span><span class="s1">signum</span><span class="s0">, </span><span class="s1">frame):  </span><span class="s2"># type: ignore</span>
+<a name="l100"><span class="ln">100  </span></a>        <span class="s4">&quot;&quot;&quot; 
+<a name="l101"><span class="ln">101  </span></a>        Call self.finish() before delegating to the original SIGINT handler. 
+<a name="l102"><span class="ln">102  </span></a> 
+<a name="l103"><span class="ln">103  </span></a>        This handler should only be in place while the progress display is 
+<a name="l104"><span class="ln">104  </span></a>        active. 
+<a name="l105"><span class="ln">105  </span></a>        &quot;&quot;&quot;</span>
+<a name="l106"><span class="ln">106  </span></a>        <span class="s1">self.finish()</span>
+<a name="l107"><span class="ln">107  </span></a>        <span class="s1">self.original_handler(signum</span><span class="s0">, </span><span class="s1">frame)</span>
+<a name="l108"><span class="ln">108  </span></a>
+<a name="l109"><span class="ln">109  </span></a>
+<a name="l110"><span class="ln">110  </span></a><span class="s0">class </span><span class="s1">SilentBar(Bar):</span>
+<a name="l111"><span class="ln">111  </span></a>    <span class="s0">def </span><span class="s1">update(self):</span>
+<a name="l112"><span class="ln">112  </span></a>        <span class="s2"># type: () -&gt; None</span>
+<a name="l113"><span class="ln">113  </span></a>        <span class="s0">pass</span>
+<a name="l114"><span class="ln">114  </span></a>
+<a name="l115"><span class="ln">115  </span></a>
+<a name="l116"><span class="ln">116  </span></a><span class="s0">class </span><span class="s1">BlueEmojiBar(IncrementalBar):</span>
+<a name="l117"><span class="ln">117  </span></a>
+<a name="l118"><span class="ln">118  </span></a>    <span class="s1">suffix = </span><span class="s3">&quot;%(percent)d%%&quot;</span>
+<a name="l119"><span class="ln">119  </span></a>    <span class="s1">bar_prefix = </span><span class="s3">&quot; &quot;</span>
+<a name="l120"><span class="ln">120  </span></a>    <span class="s1">bar_suffix = </span><span class="s3">&quot; &quot;</span>
+<a name="l121"><span class="ln">121  </span></a>    <span class="s1">phases = (</span><span class="s3">&quot;</span><span class="s0">\U0001F539</span><span class="s3">&quot;</span><span class="s0">, </span><span class="s3">&quot;</span><span class="s0">\U0001F537</span><span class="s3">&quot;</span><span class="s0">, </span><span class="s3">&quot;</span><span class="s0">\U0001F535</span><span class="s3">&quot;</span><span class="s1">)</span>
+<a name="l122"><span class="ln">122  </span></a>
+<a name="l123"><span class="ln">123  </span></a>
+<a name="l124"><span class="ln">124  </span></a><span class="s0">class </span><span class="s1">DownloadProgressMixin:</span>
+<a name="l125"><span class="ln">125  </span></a>    <span class="s0">def </span><span class="s1">__init__(self</span><span class="s0">, </span><span class="s1">*args</span><span class="s0">, </span><span class="s1">**kwargs):</span>
+<a name="l126"><span class="ln">126  </span></a>        <span class="s2"># type: (List[Any], Dict[Any, Any]) -&gt; None</span>
+<a name="l127"><span class="ln">127  </span></a>        <span class="s2"># https://github.com/python/mypy/issues/5887</span>
+<a name="l128"><span class="ln">128  </span></a>        <span class="s1">super().__init__(*args</span><span class="s0">, </span><span class="s1">**kwargs)  </span><span class="s2"># type: ignore</span>
+<a name="l129"><span class="ln">129  </span></a>        <span class="s1">self.message = (</span><span class="s3">&quot; &quot; </span><span class="s1">* (get_indentation() + </span><span class="s5">2</span><span class="s1">)) + self.message  </span><span class="s2"># type: str</span>
+<a name="l130"><span class="ln">130  </span></a>
+<a name="l131"><span class="ln">131  </span></a>    <span class="s1">@property</span>
+<a name="l132"><span class="ln">132  </span></a>    <span class="s0">def </span><span class="s1">downloaded(self):</span>
+<a name="l133"><span class="ln">133  </span></a>        <span class="s2"># type: () -&gt; str</span>
+<a name="l134"><span class="ln">134  </span></a>        <span class="s0">return </span><span class="s1">format_size(self.index)  </span><span class="s2"># type: ignore</span>
+<a name="l135"><span class="ln">135  </span></a>
+<a name="l136"><span class="ln">136  </span></a>    <span class="s1">@property</span>
+<a name="l137"><span class="ln">137  </span></a>    <span class="s0">def </span><span class="s1">download_speed(self):</span>
+<a name="l138"><span class="ln">138  </span></a>        <span class="s2"># type: () -&gt; str</span>
+<a name="l139"><span class="ln">139  </span></a>        <span class="s2"># Avoid zero division errors...</span>
+<a name="l140"><span class="ln">140  </span></a>        <span class="s0">if </span><span class="s1">self.avg == </span><span class="s5">0.0</span><span class="s1">:  </span><span class="s2"># type: ignore</span>
+<a name="l141"><span class="ln">141  </span></a>            <span class="s0">return </span><span class="s3">&quot;...&quot;</span>
+<a name="l142"><span class="ln">142  </span></a>        <span class="s0">return </span><span class="s1">format_size(</span><span class="s5">1 </span><span class="s1">/ self.avg) + </span><span class="s3">&quot;/s&quot;  </span><span class="s2"># type: ignore</span>
+<a name="l143"><span class="ln">143  </span></a>
+<a name="l144"><span class="ln">144  </span></a>    <span class="s1">@property</span>
+<a name="l145"><span class="ln">145  </span></a>    <span class="s0">def </span><span class="s1">pretty_eta(self):</span>
+<a name="l146"><span class="ln">146  </span></a>        <span class="s2"># type: () -&gt; str</span>
+<a name="l147"><span class="ln">147  </span></a>        <span class="s0">if </span><span class="s1">self.eta:  </span><span class="s2"># type: ignore</span>
+<a name="l148"><span class="ln">148  </span></a>            <span class="s0">return </span><span class="s3">f&quot;eta </span><span class="s0">{</span><span class="s1">self.eta_td</span><span class="s0">}</span><span class="s3">&quot;  </span><span class="s2"># type: ignore</span>
+<a name="l149"><span class="ln">149  </span></a>        <span class="s0">return </span><span class="s3">&quot;&quot;</span>
+<a name="l150"><span class="ln">150  </span></a>
+<a name="l151"><span class="ln">151  </span></a>    <span class="s0">def </span><span class="s1">iter(self</span><span class="s0">, </span><span class="s1">it):  </span><span class="s2"># type: ignore</span>
+<a name="l152"><span class="ln">152  </span></a>        <span class="s0">for </span><span class="s1">x </span><span class="s0">in </span><span class="s1">it:</span>
+<a name="l153"><span class="ln">153  </span></a>            <span class="s0">yield </span><span class="s1">x</span>
+<a name="l154"><span class="ln">154  </span></a>            <span class="s2"># B305 is incorrectly raised here</span>
+<a name="l155"><span class="ln">155  </span></a>            <span class="s2"># https://github.com/PyCQA/flake8-bugbear/issues/59</span>
+<a name="l156"><span class="ln">156  </span></a>            <span class="s1">self.next(len(x))  </span><span class="s2"># noqa: B305</span>
+<a name="l157"><span class="ln">157  </span></a>        <span class="s1">self.finish()</span>
+<a name="l158"><span class="ln">158  </span></a>
+<a name="l159"><span class="ln">159  </span></a>
+<a name="l160"><span class="ln">160  </span></a><span class="s0">class </span><span class="s1">WindowsMixin:</span>
+<a name="l161"><span class="ln">161  </span></a>    <span class="s0">def </span><span class="s1">__init__(self</span><span class="s0">, </span><span class="s1">*args</span><span class="s0">, </span><span class="s1">**kwargs):</span>
+<a name="l162"><span class="ln">162  </span></a>        <span class="s2"># type: (List[Any], Dict[Any, Any]) -&gt; None</span>
+<a name="l163"><span class="ln">163  </span></a>        <span class="s2"># The Windows terminal does not support the hide/show cursor ANSI codes</span>
+<a name="l164"><span class="ln">164  </span></a>        <span class="s2"># even with colorama. So we'll ensure that hide_cursor is False on</span>
+<a name="l165"><span class="ln">165  </span></a>        <span class="s2"># Windows.</span>
+<a name="l166"><span class="ln">166  </span></a>        <span class="s2"># This call needs to go before the super() call, so that hide_cursor</span>
+<a name="l167"><span class="ln">167  </span></a>        <span class="s2"># is set in time. The base progress bar class writes the &quot;hide cursor&quot;</span>
+<a name="l168"><span class="ln">168  </span></a>        <span class="s2"># code to the terminal in its init, so if we don't set this soon</span>
+<a name="l169"><span class="ln">169  </span></a>        <span class="s2"># enough, we get a &quot;hide&quot; with no corresponding &quot;show&quot;...</span>
+<a name="l170"><span class="ln">170  </span></a>        <span class="s0">if </span><span class="s1">WINDOWS </span><span class="s0">and </span><span class="s1">self.hide_cursor:  </span><span class="s2"># type: ignore</span>
+<a name="l171"><span class="ln">171  </span></a>            <span class="s1">self.hide_cursor = </span><span class="s0">False</span>
+<a name="l172"><span class="ln">172  </span></a>
+<a name="l173"><span class="ln">173  </span></a>        <span class="s2"># https://github.com/python/mypy/issues/5887</span>
+<a name="l174"><span class="ln">174  </span></a>        <span class="s1">super().__init__(*args</span><span class="s0">, </span><span class="s1">**kwargs)  </span><span class="s2"># type: ignore</span>
+<a name="l175"><span class="ln">175  </span></a>
+<a name="l176"><span class="ln">176  </span></a>        <span class="s2"># Check if we are running on Windows and we have the colorama module,</span>
+<a name="l177"><span class="ln">177  </span></a>        <span class="s2"># if we do then wrap our file with it.</span>
+<a name="l178"><span class="ln">178  </span></a>        <span class="s0">if </span><span class="s1">WINDOWS </span><span class="s0">and </span><span class="s1">colorama:</span>
+<a name="l179"><span class="ln">179  </span></a>            <span class="s1">self.file = colorama.AnsiToWin32(self.file)  </span><span class="s2"># type: ignore</span>
+<a name="l180"><span class="ln">180  </span></a>            <span class="s2"># The progress code expects to be able to call self.file.isatty()</span>
+<a name="l181"><span class="ln">181  </span></a>            <span class="s2"># but the colorama.AnsiToWin32() object doesn't have that, so we'll</span>
+<a name="l182"><span class="ln">182  </span></a>            <span class="s2"># add it.</span>
+<a name="l183"><span class="ln">183  </span></a>            <span class="s1">self.file.isatty = </span><span class="s0">lambda</span><span class="s1">: self.file.wrapped.isatty()</span>
+<a name="l184"><span class="ln">184  </span></a>            <span class="s2"># The progress code expects to be able to call self.file.flush()</span>
+<a name="l185"><span class="ln">185  </span></a>            <span class="s2"># but the colorama.AnsiToWin32() object doesn't have that, so we'll</span>
+<a name="l186"><span class="ln">186  </span></a>            <span class="s2"># add it.</span>
+<a name="l187"><span class="ln">187  </span></a>            <span class="s1">self.file.flush = </span><span class="s0">lambda</span><span class="s1">: self.file.wrapped.flush()</span>
+<a name="l188"><span class="ln">188  </span></a>
+<a name="l189"><span class="ln">189  </span></a>
+<a name="l190"><span class="ln">190  </span></a><span class="s0">class </span><span class="s1">BaseDownloadProgressBar(WindowsMixin</span><span class="s0">, </span><span class="s1">InterruptibleMixin</span><span class="s0">, </span><span class="s1">DownloadProgressMixin):</span>
+<a name="l191"><span class="ln">191  </span></a>
+<a name="l192"><span class="ln">192  </span></a>    <span class="s1">file = sys.stdout</span>
+<a name="l193"><span class="ln">193  </span></a>    <span class="s1">message = </span><span class="s3">&quot;%(percent)d%%&quot;</span>
+<a name="l194"><span class="ln">194  </span></a>    <span class="s1">suffix = </span><span class="s3">&quot;%(downloaded)s %(download_speed)s %(pretty_eta)s&quot;</span>
+<a name="l195"><span class="ln">195  </span></a>
+<a name="l196"><span class="ln">196  </span></a>
+<a name="l197"><span class="ln">197  </span></a><span class="s0">class </span><span class="s1">DefaultDownloadProgressBar(BaseDownloadProgressBar</span><span class="s0">, </span><span class="s1">_BaseBar):</span>
+<a name="l198"><span class="ln">198  </span></a>    <span class="s0">pass</span>
+<a name="l199"><span class="ln">199  </span></a>
+<a name="l200"><span class="ln">200  </span></a>
+<a name="l201"><span class="ln">201  </span></a><span class="s0">class </span><span class="s1">DownloadSilentBar(BaseDownloadProgressBar</span><span class="s0">, </span><span class="s1">SilentBar):</span>
+<a name="l202"><span class="ln">202  </span></a>    <span class="s0">pass</span>
+<a name="l203"><span class="ln">203  </span></a>
+<a name="l204"><span class="ln">204  </span></a>
+<a name="l205"><span class="ln">205  </span></a><span class="s0">class </span><span class="s1">DownloadBar(BaseDownloadProgressBar</span><span class="s0">, </span><span class="s1">Bar):</span>
+<a name="l206"><span class="ln">206  </span></a>    <span class="s0">pass</span>
+<a name="l207"><span class="ln">207  </span></a>
+<a name="l208"><span class="ln">208  </span></a>
+<a name="l209"><span class="ln">209  </span></a><span class="s0">class </span><span class="s1">DownloadFillingCirclesBar(BaseDownloadProgressBar</span><span class="s0">, </span><span class="s1">FillingCirclesBar):</span>
+<a name="l210"><span class="ln">210  </span></a>    <span class="s0">pass</span>
+<a name="l211"><span class="ln">211  </span></a>
+<a name="l212"><span class="ln">212  </span></a>
+<a name="l213"><span class="ln">213  </span></a><span class="s0">class </span><span class="s1">DownloadBlueEmojiProgressBar(BaseDownloadProgressBar</span><span class="s0">, </span><span class="s1">BlueEmojiBar):</span>
+<a name="l214"><span class="ln">214  </span></a>    <span class="s0">pass</span>
+<a name="l215"><span class="ln">215  </span></a>
+<a name="l216"><span class="ln">216  </span></a>
+<a name="l217"><span class="ln">217  </span></a><span class="s0">class </span><span class="s1">DownloadProgressSpinner(</span>
+<a name="l218"><span class="ln">218  </span></a>    <span class="s1">WindowsMixin</span><span class="s0">, </span><span class="s1">InterruptibleMixin</span><span class="s0">, </span><span class="s1">DownloadProgressMixin</span><span class="s0">, </span><span class="s1">Spinner</span>
+<a name="l219"><span class="ln">219  </span></a><span class="s1">):</span>
+<a name="l220"><span class="ln">220  </span></a>
+<a name="l221"><span class="ln">221  </span></a>    <span class="s1">file = sys.stdout</span>
+<a name="l222"><span class="ln">222  </span></a>    <span class="s1">suffix = </span><span class="s3">&quot;%(downloaded)s %(download_speed)s&quot;</span>
+<a name="l223"><span class="ln">223  </span></a>
+<a name="l224"><span class="ln">224  </span></a>    <span class="s0">def </span><span class="s1">next_phase(self):</span>
+<a name="l225"><span class="ln">225  </span></a>        <span class="s2"># type: () -&gt; str</span>
+<a name="l226"><span class="ln">226  </span></a>        <span class="s0">if not </span><span class="s1">hasattr(self</span><span class="s0">, </span><span class="s3">&quot;_phaser&quot;</span><span class="s1">):</span>
+<a name="l227"><span class="ln">227  </span></a>            <span class="s1">self._phaser = itertools.cycle(self.phases)</span>
+<a name="l228"><span class="ln">228  </span></a>        <span class="s0">return </span><span class="s1">next(self._phaser)</span>
+<a name="l229"><span class="ln">229  </span></a>
+<a name="l230"><span class="ln">230  </span></a>    <span class="s0">def </span><span class="s1">update(self):</span>
+<a name="l231"><span class="ln">231  </span></a>        <span class="s2"># type: () -&gt; None</span>
+<a name="l232"><span class="ln">232  </span></a>        <span class="s1">message = self.message % self</span>
+<a name="l233"><span class="ln">233  </span></a>        <span class="s1">phase = self.next_phase()</span>
+<a name="l234"><span class="ln">234  </span></a>        <span class="s1">suffix = self.suffix % self</span>
+<a name="l235"><span class="ln">235  </span></a>        <span class="s1">line = </span><span class="s3">&quot;&quot;</span><span class="s1">.join(</span>
+<a name="l236"><span class="ln">236  </span></a>            <span class="s1">[</span>
+<a name="l237"><span class="ln">237  </span></a>                <span class="s1">message</span><span class="s0">,</span>
+<a name="l238"><span class="ln">238  </span></a>                <span class="s3">&quot; &quot; </span><span class="s0">if </span><span class="s1">message </span><span class="s0">else </span><span class="s3">&quot;&quot;</span><span class="s0">,</span>
+<a name="l239"><span class="ln">239  </span></a>                <span class="s1">phase</span><span class="s0">,</span>
+<a name="l240"><span class="ln">240  </span></a>                <span class="s3">&quot; &quot; </span><span class="s0">if </span><span class="s1">suffix </span><span class="s0">else </span><span class="s3">&quot;&quot;</span><span class="s0">,</span>
+<a name="l241"><span class="ln">241  </span></a>                <span class="s1">suffix</span><span class="s0">,</span>
+<a name="l242"><span class="ln">242  </span></a>            <span class="s1">]</span>
+<a name="l243"><span class="ln">243  </span></a>        <span class="s1">)</span>
+<a name="l244"><span class="ln">244  </span></a>
+<a name="l245"><span class="ln">245  </span></a>        <span class="s1">self.writeln(line)</span>
+<a name="l246"><span class="ln">246  </span></a>
+<a name="l247"><span class="ln">247  </span></a>
+<a name="l248"><span class="ln">248  </span></a><span class="s1">BAR_TYPES = {</span>
+<a name="l249"><span class="ln">249  </span></a>    <span class="s3">&quot;off&quot;</span><span class="s1">: (DownloadSilentBar</span><span class="s0">, </span><span class="s1">DownloadSilentBar)</span><span class="s0">,</span>
+<a name="l250"><span class="ln">250  </span></a>    <span class="s3">&quot;on&quot;</span><span class="s1">: (DefaultDownloadProgressBar</span><span class="s0">, </span><span class="s1">DownloadProgressSpinner)</span><span class="s0">,</span>
+<a name="l251"><span class="ln">251  </span></a>    <span class="s3">&quot;ascii&quot;</span><span class="s1">: (DownloadBar</span><span class="s0">, </span><span class="s1">DownloadProgressSpinner)</span><span class="s0">,</span>
+<a name="l252"><span class="ln">252  </span></a>    <span class="s3">&quot;pretty&quot;</span><span class="s1">: (DownloadFillingCirclesBar</span><span class="s0">, </span><span class="s1">DownloadProgressSpinner)</span><span class="s0">,</span>
+<a name="l253"><span class="ln">253  </span></a>    <span class="s3">&quot;emoji&quot;</span><span class="s1">: (DownloadBlueEmojiProgressBar</span><span class="s0">, </span><span class="s1">DownloadProgressSpinner)</span><span class="s0">,</span>
+<a name="l254"><span class="ln">254  </span></a><span class="s1">}</span>
+<a name="l255"><span class="ln">255  </span></a>
+<a name="l256"><span class="ln">256  </span></a>
+<a name="l257"><span class="ln">257  </span></a><span class="s0">def </span><span class="s1">DownloadProgressProvider(progress_bar</span><span class="s0">, </span><span class="s1">max=</span><span class="s0">None</span><span class="s1">):  </span><span class="s2"># type: ignore</span>
+<a name="l258"><span class="ln">258  </span></a>    <span class="s0">if </span><span class="s1">max </span><span class="s0">is None or </span><span class="s1">max == </span><span class="s5">0</span><span class="s1">:</span>
+<a name="l259"><span class="ln">259  </span></a>        <span class="s0">return </span><span class="s1">BAR_TYPES[progress_bar][</span><span class="s5">1</span><span class="s1">]().iter</span>
+<a name="l260"><span class="ln">260  </span></a>    <span class="s0">else</span><span class="s1">:</span>
+<a name="l261"><span class="ln">261  </span></a>        <span class="s0">return </span><span class="s1">BAR_TYPES[progress_bar][</span><span class="s5">0</span><span class="s1">](max=max).iter</span>
+<a name="l262"><span class="ln">262  </span></a></pre>
+</body>
+</html>
